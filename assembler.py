@@ -11,20 +11,14 @@ Project Authors:
 """
 
 
-
-
-
-import re
-
-
 class Instruction:
     # Initiate the Instruction object with the assembly instruction derived from stdin
     def __init__(self, asmInstruction, lineNumber):
         self.instruction = asmInstruction.split(); # is a list 
         self.lineNumber = lineNumber;
         self.instructionLength = len(self.instruction); # Refers to the number of operands in the instruction (including instruction name)
-
-
+        self.validInstruction = False; # All instructions are assumed to be invalid initally
+        self.instructionType = None;
 
     # This method checks the validity of the instruction name (i.e the first word of the instruction)
     def checkInstructionName(self):
@@ -52,6 +46,9 @@ class Instruction:
 
 
 
+
+
+
     def add(self):
         
         if (self.instructionLength != 4):
@@ -62,18 +59,54 @@ class Instruction:
             reg2 = registers[self.instruction[2].lower()];
             reg3 = registers[self.instruction[3].lower()];
 
-            ## Note: continue from here
+            self.validInstruction = True;
+            self.instructionType = 'A';
 
-        except KeyError: # This error is thrown when one of the registers is invalid
-            pass            
+        except KeyError: # This error is thrown when one of the register names is invalid
+            print(f'Typo in register name on line {self.lineNumber}');
+            exit();  
 
     
     def sub(self):
-        pass
+        if (self.instructionLength != 4):
+            self.syntaxError();
+
+        try:
+            reg1 = registers[self.instruction[1].lower()];
+            reg2 = registers[self.instruction[2].lower()];
+            reg3 = registers[self.instruction[3].lower()];
+
+            self.validInstruction = True;
+            self.instructionType = 'A';
+            flags['v'] = 1;
+
+            # TODO: Handle overflow and I think I missed some stuff about registers actually storing values
+            # Will have to fix or add some new code
+
+            
+        except KeyError: # This error is thrown when one of the register names is invalid
+            print(f'Typo in register name on line {self.lineNumber}');
+            exit();  
+
 
 
     def mov(self):
-        pass
+        if (self.instructionLength != 3):
+            self.syntaxError();
+
+        try:
+            reg1 = registers[self.instruction[1].lower()];
+
+            if (self.instruction[2].startswith('$')): # Mov immediate
+                #c omplete later on for immediate/const values
+                pass
+            elif (self.instruction[2] in registers.keys()): # Mov Register
+                self.validInstruction = True;
+                self.instructionType = 'C';
+
+
+        except:
+            pass
     
     
     def hlt(self):
@@ -97,6 +130,44 @@ class Instruction:
     def __str__(self):
         return f'Instruction: {" ".join(self.instruction)} | Line: {self.lineNumber}';
 
+
+
+
+
+
+
+def encode(instructionObject):
+    instructionType = instructionObject.instructionType;
+    binaryOutput = "";
+
+    if (instructionType == 'A'): # 3 Registers type
+        opcode = opcodes[instructionObject.instruction[0]];
+        reg1 = registers[instructionObject.instruction[1]];
+        reg2 = registers[instructionObject.instruction[2]];
+        reg3 = registers[instructionObject.instruction[3]];
+
+        binaryOutput = f"{opcode}00{reg1}{reg2}{reg3}"; # The zeroes in this binary output are unused/filler bits
+
+    if (instructionType == 'B'): # Register and Immediate type
+        pass
+
+    if (instructionType == 'C'): # 2 Registers type
+        opcode = opcodes[instructionObject.instruction[0]];
+        reg1 = registers[instructionObject.instruction[1]];
+        reg2 = registers[instructionObject.instruction[2]];
+
+        binaryOutput = f"{opcode}00000{reg1}{reg2}";
+
+
+
+
+
+
+    if (instructionType == None):
+        print("ERROR: For some reason, the instruction type is None. Located error in encode(). Fix ASAP.");
+        return;
+
+    outputList.append(binaryOutput);
 
 
 
@@ -138,6 +209,13 @@ registers = {
     'r6' : '110',
 }
 
+flags = {
+    'v':0,  # overflow
+    'l':0,  # less than
+    'g':0,  # greater than
+    'e':0   # equal
+}
+
 instructionsList = [] # List contains all instructions derived from STDIN
 outputList = []  # List contains everything that needs to be outputted to STDOUT
 
@@ -166,12 +244,12 @@ def main():
             print("\nAssembly input terminated. Generating your machine code.\n");
             break;
 
-"""
+        """
         except Exception as e:
             print("An unknown error occured. The error message is given below.");
             print(e);
             break;
-"""
+        """
 
 
 def generateBinaries():
@@ -180,10 +258,14 @@ def generateBinaries():
         instructionObject.checkInstructionName() # Checks the validity of the instruction's first work aka the instruction name
         instructionObject.executeInstruction();
 
+        if (instructionObject.validInstruction):
+            encode(instructionObject);
+
 
 def output():
     for outputLine in outputList:
-        pass;
+        print(outputLine);
+
     
 
 
