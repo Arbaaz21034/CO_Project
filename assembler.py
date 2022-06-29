@@ -14,15 +14,21 @@ Project Authors:
 
 
 
+import re
+
+
 class Instruction:
     # Initiate the Instruction object with the assembly instruction derived from stdin
     def __init__(self, asmInstruction, lineNumber):
-        self.instruction = asmInstruction;
+        self.instruction = asmInstruction.split(); # is a list 
         self.lineNumber = lineNumber;
+        self.instructionLength = len(self.instruction); # Refers to the number of operands in the instruction (including instruction name)
+
+
 
     # This method checks the validity of the instruction name (i.e the first word of the instruction)
     def checkInstructionName(self):
-        instructionName = self.instruction.split()[0];
+        instructionName = self.instruction[0];
         validInstructionNames = ['var','add','sub','mov','ld','st','mul','div','rs','ls','xor','or',
         'and','not','cmp','jmp','jlt','jgt','je','hlt'];
 
@@ -33,13 +39,63 @@ class Instruction:
                 exit();
 
 
+    # !!!!!!!!!!!! COMPLETE IT, CHECK THE TODO  !!!!!!!!!!!!!!!!!
+    def executeInstruction(self):
+        instructionName = self.instruction[0];
+        commonInstructions = ['add','sub','mov','ld','st','mul','div','rs','ls','xor','or',
+        'and','not','cmp','jmp','jlt','jgt','je','hlt']; # list does not include var and labels
+        # TODO: Implement execution for var and labels as well
+
+        if (instructionName in commonInstructions):
+            eval(f"self.{instructionName}()"); # Neat way of executing methods based on the variable name. Alternative would have been several lines.
+
+
+
+
+    def add(self):
+        
+        if (self.instructionLength != 4):
+            self.syntaxError();
+
+        try:
+            reg1 = registers[self.instruction[1].lower()];
+            reg2 = registers[self.instruction[2].lower()];
+            reg3 = registers[self.instruction[3].lower()];
+
+            ## Note: continue from here
+
+        except KeyError: # This error is thrown when one of the registers is invalid
+            pass            
+
+    
+    def sub(self):
+        pass
+
+
+    def mov(self):
+        pass
+    
+    
+    def hlt(self):
+        pass
+
+
+
+
+
+
+
+
+    def syntaxError(self):
+        print(f"Syntax error on line {self.lineNumber}");
+        exit();
 
 
 
     # Solely for debugging purposes
     # This method is triggered when print(instructionObject) is called
     def __str__(self):
-        return f"Instruction: {self.instruction} | Line: {self.lineNumber}";
+        return f'Instruction: {" ".join(self.instruction)} | Line: {self.lineNumber}';
 
 
 
@@ -73,13 +129,13 @@ opcodes = {
 
 
 registers = {
-    'R0' : '000',
-    'R1' : '001',
-    'R2' : '010',
-    'R3' : '011',
-    'R4' : '100',
-    'R5' : '101',
-    'R6' : '110',
+    'r0' : '000',
+    'r1' : '001',
+    'r2' : '010',
+    'r3' : '011',
+    'r4' : '100',
+    'r5' : '101',
+    'r6' : '110',
 }
 
 instructionsList = [] # List contains all instructions derived from STDIN
@@ -122,7 +178,7 @@ def generateBinaries():
     for instructionObject in instructionsList:
         #print(instructionObject); # DO NOT uncomment when in production
         instructionObject.checkInstructionName() # Checks the validity of the instruction's first work aka the instruction name
-
+        instructionObject.executeInstruction();
 
 
 def output():
