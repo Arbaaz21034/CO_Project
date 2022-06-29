@@ -1,6 +1,6 @@
 """
 Project Name:
-    Computer Organization CSE112 - Midsem Evaluation 2022
+    Computer Organization CSE112 - Q1: Assembler for Midsem Evaluation 2022
 
 
 Project Authors:
@@ -9,6 +9,22 @@ Project Authors:
     Arbaaz Choudhari       (2021034)
 
 """
+
+class Instruction:
+    # Initiate the Instruction object with the assembly instruction derived from stdin
+    def __init__(self,asmInstruction):
+        self.instruction = asmInstruction;
+
+    def add(self):
+        pass
+
+    def printInstruction(self):
+        print(self.instruction);
+
+
+
+
+
 
 opcodes = {
     'add' : '10000',
@@ -43,6 +59,8 @@ registers = {
     'R6' : '110',
 }
 
+instructionsList = [] # List contains all instructions derived from STDIN
+outputList = []  # List contains everything that needs to be outputted to STDOUT
 
 
 
@@ -51,3 +69,43 @@ registers = {
 
 
 
+def main():
+    while 1:
+        try:
+            inputLine = input().strip();
+
+            # Don't add the instruction to the instructions list when the instruction is empty or a blank line
+            if (len(inputLine) == 0):
+                continue;
+
+            instructionsList.append(inputLine);
+
+        except EOFError:
+            print("\nAssembly input terminated. Generating your machine code.\n");
+            break;
+
+
+        except Exception as e:
+            print("An unknown error occured. The error message is given below.");
+            print(e);
+            break;
+
+
+
+def output():
+    
+    for instructionLine in instructionsList:
+        instruction = Instruction(instructionLine); # Create an Instruction Object
+        instruction.printInstruction();
+
+
+
+
+
+
+
+
+# Calling the main program function
+main()
+# Calling the program which will output binaries or errors
+output()
