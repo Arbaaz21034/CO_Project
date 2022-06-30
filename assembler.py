@@ -13,6 +13,7 @@ Project Authors:
 # Some notes to remember:
 # Apparently, registers are 16 bits in Q1
 
+# FIXME: Fix flag stuff (High Alert)
 
 
 class Instruction:
@@ -44,8 +45,8 @@ class Instruction:
         'and','not','cmp','jmp','jlt','jgt','je','hlt']; # list does not include var and labels
         # TODO: Implement execution for var and labels as well
 
-        if (instructionName in commonInstructions):
-            if (instructionName in ["and","or","not"]): # Had to create a special way to execute and, or, not operations as they are keywords in python
+        if (instructionName.lower() in commonInstructions):
+            if (instructionName.lower() in ["and","or","not"]): # Had to create a special way to execute and, or, not operations as they are keywords in python
                 eval(f"self.{instructionName}Instruction()");
             else:
                 eval(f"self.{instructionName}()"); # Neat way of executing methods based on the variable name. Alternative would have been several lines.
@@ -86,6 +87,8 @@ class Instruction:
             reg2 = registers[self.instruction[2].lower()];
             reg3 = registers[self.instruction[3].lower()];
 
+
+
             if (reg2[1] > reg1[1]):
                 reg3[1] = 0;
                 flags['v'] = 1;
@@ -122,7 +125,7 @@ class Instruction:
 
 
 
-            elif (self.instruction[2].lower() in list(registers.keys())): # Mov Register
+            else: # Mov Register
                 reg2 = registers[self.instruction[2].lower()];
                 reg2[1] = reg1[1];
 
@@ -131,7 +134,8 @@ class Instruction:
 
 
         except:
-            # complete this
+            # complete this maybe
+            self.typoError();
             pass
 
     def mul(self):
@@ -297,7 +301,7 @@ class Instruction:
             reg2 = registers[self.instruction[2].lower()];
 
             # not sure if the overflow flag will be reset here as well or not. For now, I'm not resetting it.
-
+            flags['v'] = 0;
             flags['l'] = 0;
             flags['g'] = 0;
             flags['e'] = 0;
@@ -337,10 +341,9 @@ class Instruction:
 
     
     def hlt(self):
+        # FIXME: Maybe the hlt keyword must be the last instruction
         if (self.instructionLength != 1):
             self.syntaxError();
-        if (self.lineNumber != len(instructionsList)):
-            self.hltError();
         if (rawInstructionsList[-1] != "hlt"): # Check if hlt is not used as the last instruction (which is illegal)
             self.hltError();
 
@@ -361,7 +364,7 @@ class Instruction:
         exit();
 
     def hltError(self):
-        print(f"hlt not used as the last instruction on line {self.lineNumber}");
+        print(f"hlt not used as the last instruction on line {lineCount}");
         exit();
 
     def typoError(self):
@@ -508,7 +511,7 @@ def main():
             rawInstructionsList.append(inputLine);
 
         except EOFError:
-            print("\nAssembly input terminated. Generating your machine code.\n");
+            #print("\nAssembly input terminated. Generating your machine code.\n");
             break;
 
         """
@@ -517,7 +520,7 @@ def main():
             print(e);
             break;
         """
-
+['MOVE R1 R0','hlt']
 
 def generateBinaries():
     if ('hlt' not in rawInstructionsList): # Check if hlt is missing
@@ -540,7 +543,7 @@ def output():
         print(outputLine);
 
     # For debugging purposes. In production, comment the line below.
-    #print(registers);
+    print(registers);
     
 
 
