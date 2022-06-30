@@ -15,6 +15,9 @@ Project Authors:
 
 
 
+from re import S
+
+
 class Instruction:
     # Initiate the Instruction object with the assembly instruction derived from stdin
     def __init__(self, asmInstruction, lineNumber):
@@ -45,7 +48,10 @@ class Instruction:
         # TODO: Implement execution for var and labels as well
 
         if (instructionName in commonInstructions):
-            eval(f"self.{instructionName}()"); # Neat way of executing methods based on the variable name. Alternative would have been several lines.
+            if (instructionName in ["and","or","not"]): # Had to create a special way to execute and, or, not operations as they are keywords in python
+                eval(f"self.{instructionName}Instruction()");
+            else:
+                eval(f"self.{instructionName}()"); # Neat way of executing methods based on the variable name. Alternative would have been several lines.
 
 
 
@@ -109,9 +115,13 @@ class Instruction:
 
             if (self.instruction[2].startswith('$')): # Mov immediate
                 # complete later on for immediate/const values
+                # TODO: Check if the immValue does not EXCEED 8 bits (or, is > 255 in dec)
                 immValue = int(self.instruction[2].replace('$',''));
                 reg1[1] = immValue;
-                # As of now, mov imm does NOT generate a machine code. Implement this later.
+
+                self.validInstruction = True;
+                self.instructionType = 'B';
+
 
 
 
@@ -207,8 +217,85 @@ class Instruction:
         except KeyError:
             self.typoError();
 
+    def xor(self):
+        if (self.instructionLength != 4):
+            self.syntaxError();
+
+        try:
+            reg1 = registers[self.instruction[1].lower()];
+            reg2 = registers[self.instruction[2].lower()];
+            reg3 = registers[self.instruction[3].lower()];
+
+            reg3[1] = reg1[1] ^ reg2[1];
+            self.validInstruction = True;
+            self.instructionType = 'A';
+        
+        except KeyError:
+            self.typoError();
+
+
+    # Could not name this method "or" as it's already a keyword in python. Sad. (Same for "and")
+    def orInstruction(self):
+        if (self.instructionLength != 4):
+            self.syntaxError();
+
+        try:
+            reg1 = registers[self.instruction[1].lower()];
+            reg2 = registers[self.instruction[2].lower()];
+            reg3 = registers[self.instruction[3].lower()];
+
+            reg3[1] = reg1[1] | reg2[1];
+            self.validInstruction = True;
+            self.instructionType = 'A';
+        
+        except KeyError:
+            self.typoError();
+
+
+
+    def andInstruction(self):
+        if (self.instructionLength != 4):
+            self.syntaxError();
+
+        try:
+            reg1 = registers[self.instruction[1].lower()];
+            reg2 = registers[self.instruction[2].lower()];
+            reg3 = registers[self.instruction[3].lower()];
+
+            reg3[1] = reg1[1] & reg2[1];
+            self.validInstruction = True;
+            self.instructionType = 'A';
+        
+        except KeyError:
+            self.typoError();
+
+
+    # Stands for invert (not) instruction
+    def notInstruction(self):
+        if (self.instructionLength != 3):
+            self.syntaxError();
+        
+        try:
+            reg1 = registers[self.instruction[1].lower()];
+            reg2 = registers[self.instruction[2].lower()];
+
+            reg1[1] = ~reg2[1];
+            self.validInstruction = True;
+            self.instructionType = "C";
+            
+        except KeyError:
+            self.typoError();
 
     
+
+
+
+
+
+
+    
+
+
     
     def hlt(self):
         if (self.instructionLength != 1):
@@ -325,7 +412,8 @@ opcodes = {
     'ls'  : '11001', 
     'xor' : '11010', 
     'or'  : '11011', 
-    'and' : '11100', 
+    'and' : '11100',
+    'not' : '11101',
     'cmp' : '11110',
     'jmp' : '11111', 
     'jlt' : '01100', 
@@ -410,7 +498,8 @@ def output():
     for outputLine in outputList:
         print(outputLine);
 
-    print(registers);
+    # For debugging purposes. In production, comment the line below.
+    #print(registers);
     
 
 
