@@ -11,6 +11,7 @@ Project Authors:
 """
 
 
+
 class Instruction:
     # Initiate the Instruction object with the assembly instruction derived from stdin
     def __init__(self, asmInstruction, lineNumber):
@@ -106,11 +107,38 @@ class Instruction:
 
 
         except:
+            # complete this
             pass
+
+    def mul(self):
+        if (self.instructionLength != 4):
+            self.syntaxError();
+
+        try:
+            reg1 = registers[self.instruction[1].lower()];
+            reg2 = registers[self.instruction[2].lower()];
+            reg3 = registers[self.instruction[3].lower()];
+
+            self.validInstruction = True;
+            self.instructionType = 'A';
+
+        except KeyError: # This error is thrown when one of the register names is invalid
+            print(f'Typo in register name on line {self.lineNumber}');
+            exit();  
+
+
     
     
     def hlt(self):
-        pass
+        if (self.instructionLength != 1):
+            self.syntaxError();
+        if (self.lineNumber != len(instructionsList)):
+            self.hltError();
+        if (rawInstructionsList[-1] != "hlt"): # Check if hlt is not used as the last instruction (which is illegal)
+            self.hltError();
+
+        self.validInstruction = True;
+        self.instructionType = 'F';
 
 
 
@@ -121,6 +149,10 @@ class Instruction:
 
     def syntaxError(self):
         print(f"Syntax error on line {self.lineNumber}");
+        exit();
+
+    def hltError(self):
+        print(f"hlt not used as the last instruction on line {self.lineNumber}");
         exit();
 
 
@@ -159,6 +191,11 @@ def encode(instructionObject):
         binaryOutput = f"{opcode}00000{reg1}{reg2}";
 
 
+
+
+    if (instructionType == 'F'):
+        opcode = opcodes[instructionObject.instruction[0]];
+        binaryOutput = f"{opcode}00000000000";
 
 
 
@@ -216,7 +253,8 @@ flags = {
     'e':0   # equal
 }
 
-instructionsList = [] # List contains all instructions derived from STDIN
+instructionsList = [] # List contains all Instruction Objects derived from STDIN
+rawInstructionsList = []; # List contains all instrucions in raw text form derived from STDIN
 outputList = []  # List contains everything that needs to be outputted to STDOUT
 
 
@@ -239,6 +277,7 @@ def main():
 
             currentInstruction = Instruction(inputLine,lineCount); # Create an Instruction object
             instructionsList.append(currentInstruction);
+            rawInstructionsList.append(inputLine);
 
         except EOFError:
             print("\nAssembly input terminated. Generating your machine code.\n");
@@ -253,6 +292,12 @@ def main():
 
 
 def generateBinaries():
+    if ('hlt' not in rawInstructionsList): # Check if hlt is missing
+        print(f"Error: Missing hlt instruction at line {lineCount}");
+        exit();
+
+
+
     for instructionObject in instructionsList:
         #print(instructionObject); # DO NOT uncomment when in production
         instructionObject.checkInstructionName() # Checks the validity of the instruction's first work aka the instruction name
