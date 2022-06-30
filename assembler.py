@@ -10,6 +10,9 @@ Project Authors:
 
 """
 
+# Some notes to remember:
+# Apparently, registers are 16 bits in Q1
+
 
 
 class Instruction:
@@ -48,7 +51,7 @@ class Instruction:
 
 
 
-
+    # All instruction methods
 
     def add(self):
         
@@ -68,8 +71,7 @@ class Instruction:
             self.instructionType = 'A';
 
         except KeyError: # This error is thrown when one of the register names is invalid
-            print(f'Typo in register name on line {self.lineNumber}');
-            exit();  
+            self.typoError();  
 
     
     def sub(self):
@@ -94,8 +96,7 @@ class Instruction:
 
             
         except KeyError: # This error is thrown when one of the register names is invalid
-            print(f'Typo in register name on line {self.lineNumber}');
-            exit();  
+            self.typoError();
 
 
 
@@ -142,8 +143,69 @@ class Instruction:
             self.instructionType = 'A';
 
         except KeyError: # This error is thrown when one of the register names is invalid
-            print(f'Typo in register name on line {self.lineNumber}');
-            exit();  
+            self.typoError();
+
+    def div(self):
+        if (self.instructionLength != 3):
+            self.syntaxError();
+        
+        try:
+            reg3 = registers[self.instruction[1].lower()];
+            reg4 = registers[self.instruction[2].lower()];
+
+
+            # This might not be the right thing to do. FIXME: This may need a fix in future
+            if (reg4[1] == 0): # Zero division error
+                print(f'ZeroDivisionError on line {self.lineNumber}: You cannot divide by 0');
+                exit();
+
+            quotient = int(reg3[1] / reg4[1]);
+            remainder = reg3[1] % reg4[1];
+
+            registers['r0'][1] = quotient;
+            registers['r1'][1] = remainder;
+
+            self.validInstruction = True;
+            self.instructionType = 'C';
+
+        except KeyError:
+            self.typoError();
+
+
+    def rs(self):
+        if (self.instructionLength != 3):
+            self.syntaxError();
+        
+        try:
+            reg1 = registers[self.instruction[1].lower()];
+            immValue = int(self.instruction[2].replace('$',''));
+            # TODO: Check if the imm value is 8 bit or not. Throw an error if it isn't. Do this for every function where an immediate value is used
+
+            newValue = reg1[1] >> immValue;
+            reg1[1] = newValue;
+            self.validInstruction = True;
+            self.instructionType = 'B';
+
+        except KeyError:
+            self.typoError();
+
+
+    def ls(self):
+        if (self.instructionLength != 3):
+            self.syntaxError();
+        
+        try:
+            reg1 = registers[self.instruction[1].lower()];
+            immValue = int(self.instruction[2].replace('$',''));
+            # TODO: Check if the imm value is 8 bit or not. Throw an error if it isn't. Do this for every function where an immediate value is used
+
+            newValue = reg1[1] << immValue;
+            reg1[1] = newValue;
+            self.validInstruction = True;
+            self.instructionType = 'B';
+
+        except KeyError:
+            self.typoError();
 
 
     
@@ -164,7 +226,7 @@ class Instruction:
 
 
 
-
+    # All error methods
 
     def syntaxError(self):
         print(f"Syntax error on line {self.lineNumber}");
@@ -172,6 +234,10 @@ class Instruction:
 
     def hltError(self):
         print(f"hlt not used as the last instruction on line {self.lineNumber}");
+        exit();
+
+    def typoError(self):
+        print(f'Typo in register name on line {self.lineNumber}');
         exit();
 
 
@@ -200,7 +266,12 @@ def encode(instructionObject):
         binaryOutput = f"{opcode}00{reg1[0]}{reg2[0]}{reg3[0]}"; # The zeroes in this binary output are unused/filler bits
 
     if (instructionType == 'B'): # Register and Immediate type
-        pass
+        opcode = opcodes[instructionObject.instruction[0]];
+        reg1 = registers[instructionObject.instruction[1]];
+        immValue = int(instructionObject.instruction[2].replace('$',''));
+        immValueInBinary = convertDecimalToBinary(immValue); # Strictly 8-bits
+        binaryOutput = f"{opcode}{reg1[0]}{immValueInBinary}";
+
 
     if (instructionType == 'C'): # 2 Registers type
         opcode = opcodes[instructionObject.instruction[0]];
@@ -229,6 +300,15 @@ def encode(instructionObject):
 
 
 
+
+def convertDecimalToBinary(decimal):
+    # Maximum value of decimal supported is 255. For dec=256, the binary result overflows to more than 8 bits
+    binary = bin(decimal).replace('0b','');
+    eightBitBinary = "0"*(8-len(binary)) + binary; 
+
+
+
+    return eightBitBinary;
 
 
 
