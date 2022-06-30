@@ -15,9 +15,6 @@ Project Authors:
 
 
 
-from re import S
-
-
 class Instruction:
     # Initiate the Instruction object with the assembly instruction derived from stdin
     def __init__(self, asmInstruction, lineNumber):
@@ -182,6 +179,10 @@ class Instruction:
             self.typoError();
 
 
+    # TODO: Create methods for LOAD (ld) and STORE (st)
+
+
+
     def rs(self):
         if (self.instructionLength != 3):
             self.syntaxError();
@@ -287,13 +288,51 @@ class Instruction:
             self.typoError();
 
     
+    def cmp(self):
+        if (self.instructionLength != 3):
+            self.syntaxError();
+
+        try:
+            reg1 = registers[self.instruction[1].lower()];
+            reg2 = registers[self.instruction[2].lower()];
+
+            # not sure if the overflow flag will be reset here as well or not. For now, I'm not resetting it.
+
+            flags['l'] = 0;
+            flags['g'] = 0;
+            flags['e'] = 0;
+
+            if (reg1[1] == reg2[1]):
+                flags['e'] = 1;
+            elif (reg1[1] > reg2[1]):
+                flags['g'] = 1;
+            elif (reg1[1] < reg2[1]):
+                flags['l'] = 1;
+
+            self.validInstruction = True;
+            self.instructionType = "C";
+
+            # For debugging purposes. Comment the statement below when code is in production
+            #print(flags);
+
+        except KeyError:
+            self.typoError();
+
+    def jmp(self):
+        pass
 
 
+    def jlt(self):
+        pass
 
 
+    def jgt(self):
+        pass
 
 
-    
+    def je(self):
+        pass
+
 
 
     
@@ -307,6 +346,8 @@ class Instruction:
 
         self.validInstruction = True;
         self.instructionType = 'F';
+
+
 
 
 
