@@ -60,6 +60,10 @@ class Instruction:
             reg2 = registers[self.instruction[2].lower()];
             reg3 = registers[self.instruction[3].lower()];
 
+            reg3[1] = reg1[1] + reg2[1]; # Actually add the registers's values and dump in reg3's value
+
+
+            #TODO: handle overflow in addition. Figure out when it'll occur as well
             self.validInstruction = True;
             self.instructionType = 'A';
 
@@ -77,12 +81,16 @@ class Instruction:
             reg2 = registers[self.instruction[2].lower()];
             reg3 = registers[self.instruction[3].lower()];
 
+            if (reg2[1] > reg1[1]):
+                reg3[1] = 0;
+                flags['v'] = 1;
+            else:
+                reg3[1] = reg1[1] - reg2[1]; # Actually subtract the registers's values and dump in reg3's value
+
+
             self.validInstruction = True;
             self.instructionType = 'A';
-            flags['v'] = 1;
 
-            # TODO: Handle overflow and I think I missed some stuff about registers actually storing values
-            # Will have to fix or add some new code
 
             
         except KeyError: # This error is thrown when one of the register names is invalid
@@ -99,9 +107,17 @@ class Instruction:
             reg1 = registers[self.instruction[1].lower()];
 
             if (self.instruction[2].startswith('$')): # Mov immediate
-                #c omplete later on for immediate/const values
-                pass
-            elif (self.instruction[2] in registers.keys()): # Mov Register
+                # complete later on for immediate/const values
+                immValue = int(self.instruction[2].replace('$',''));
+                reg1[1] = immValue;
+                # As of now, mov imm does NOT generate a machine code. Implement this later.
+
+
+
+            elif (self.instruction[2].lower() in list(registers.keys())): # Mov Register
+                reg2 = registers[self.instruction[2].lower()];
+                reg2[1] = reg1[1];
+
                 self.validInstruction = True;
                 self.instructionType = 'C';
 
@@ -119,6 +135,9 @@ class Instruction:
             reg2 = registers[self.instruction[2].lower()];
             reg3 = registers[self.instruction[3].lower()];
 
+
+            #TODO: handle overflow in  mult. Figure out when it'll occur as well
+            reg3[1] = reg1[1] * reg2[1];
             self.validInstruction = True;
             self.instructionType = 'A';
 
@@ -178,7 +197,7 @@ def encode(instructionObject):
         reg2 = registers[instructionObject.instruction[2]];
         reg3 = registers[instructionObject.instruction[3]];
 
-        binaryOutput = f"{opcode}00{reg1}{reg2}{reg3}"; # The zeroes in this binary output are unused/filler bits
+        binaryOutput = f"{opcode}00{reg1[0]}{reg2[0]}{reg3[0]}"; # The zeroes in this binary output are unused/filler bits
 
     if (instructionType == 'B'): # Register and Immediate type
         pass
@@ -188,7 +207,7 @@ def encode(instructionObject):
         reg1 = registers[instructionObject.instruction[1]];
         reg2 = registers[instructionObject.instruction[2]];
 
-        binaryOutput = f"{opcode}00000{reg1}{reg2}";
+        binaryOutput = f"{opcode}00000{reg1[0]}{reg2[0]}";
 
 
 
@@ -237,13 +256,13 @@ opcodes = {
 
 
 registers = {
-    'r0' : '000',
-    'r1' : '001',
-    'r2' : '010',
-    'r3' : '011',
-    'r4' : '100',
-    'r5' : '101',
-    'r6' : '110',
+    'r0' : ['000',0], # In the values of the keys, value[0] stands for the binary name (str) of the register and value[1] stands for its actual dynamic value (int) in the program
+    'r1' : ['001',0],
+    'r2' : ['010',0],
+    'r3' : ['011',0],
+    'r4' : ['100',0],
+    'r5' : ['101',0],
+    'r6' : ['110',0],
 }
 
 flags = {
@@ -311,6 +330,7 @@ def output():
     for outputLine in outputList:
         print(outputLine);
 
+    print(registers);
     
 
 
