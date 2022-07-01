@@ -16,6 +16,47 @@ Project Authors:
 # FIXME: Fix flag stuff (High Alert)
 
 
+
+
+# Declaring all the global variables here -------------------
+
+
+opcodes = {
+    'add' : '10000', 'sub' : '10001', 'mov' : '10010', 'mov' : '10011',
+    'ld'  : '10100', 'st'  : '10101', 'mul' : '10110', 'div' : '10111',
+    'rs'  : '11000', 'ls'  : '11001', 'xor' : '11010', 'or'  : '11011', 
+    'and' : '11100', 'not' : '11101', 'cmp' : '11110', 'jmp' : '11111', 
+    'jlt' : '01100', 'jgt' : '01101', 'je'  : '01111', 'hlt' : '01010'
+}
+
+registers = {
+    'r0' : ['000',0], # In the values of the keys, value[0] stands for the binary name (str) of the register and value[1] stands for its actual dynamic value (int) in the program
+    'r1' : ['001',0], 'r2' : ['010',0], 'r3' : ['011',0],
+    'r4' : ['100',0], 'r5' : ['101',0], 'r6' : ['110',0],
+}
+
+flags = {
+    'v':0,  # overflow
+    'l':0,  # less than
+    'g':0,  # greater than
+    'e':0   # equal
+}
+
+instructionsList = [] # List contains all Instruction Objects derived from STDIN
+rawInstructionsList = []; # List contains all instrucions in raw text form derived from STDIN
+outputList = []  # List contains everything that needs to be outputted to STDOUT
+
+lineCount = 0; # Keep a track of the instruction's line number (Needed for ErrorGen)
+
+
+
+
+
+
+# Actual Implementation starts here -------------------
+
+
+# This class forms the basis of the assembler. It contains all the error checks and everything else related to the instructions.
 class Instruction:
     # Initiate the Instruction object with the assembly instruction derived from stdin
     def __init__(self, asmInstruction, lineNumber):
@@ -383,10 +424,10 @@ class Instruction:
 
 
 
-
+# This function converts (i.e encodes) the instructions into machine code (which is a 16-bit binary)
 def encode(instructionObject):
     instructionType = instructionObject.instructionType;
-    binaryOutput = "";
+    binaryOutput = None;
 
     if (instructionType == 'A'): # 3 Registers type
         opcode = opcodes[instructionObject.instruction[0]];
@@ -396,7 +437,8 @@ def encode(instructionObject):
 
         binaryOutput = f"{opcode}00{reg1[0]}{reg2[0]}{reg3[0]}"; # The zeroes in this binary output are unused/filler bits
 
-    if (instructionType == 'B'): # Register and Immediate type
+
+    elif (instructionType == 'B'): # Register and Immediate type
         opcode = opcodes[instructionObject.instruction[0]];
         reg1 = registers[instructionObject.instruction[1]];
         immValue = int(instructionObject.instruction[2].replace('$',''));
@@ -404,7 +446,7 @@ def encode(instructionObject):
         binaryOutput = f"{opcode}{reg1[0]}{immValueInBinary}";
 
 
-    if (instructionType == 'C'): # 2 Registers type
+    elif (instructionType == 'C'): # 2 Registers type
         opcode = opcodes[instructionObject.instruction[0]];
         reg1 = registers[instructionObject.instruction[1]];
         reg2 = registers[instructionObject.instruction[2]];
@@ -412,16 +454,27 @@ def encode(instructionObject):
         binaryOutput = f"{opcode}00000{reg1[0]}{reg2[0]}";
 
 
+    elif (instructionType == 'D'): # Register and memoryAddress type
+        opcode = opcodes[instructionObject.instruction[0]];
+        reg1 = registers[instructionObject.instruction[1]];
+        memAddr = "~~~~~~~~"; # Replace the value of memAddr with the memAddr when it is implemented
+
+        binaryOutput = f"{opcode}{reg1[0]}{memAddr}";
 
 
-    if (instructionType == 'F'):
+    elif (instructionType == 'E'): # Only memoryAddress type
+        opcode = opcodes[instructionObject.instruction[0]];
+        memAddr = "~~~~~~~~"; # Replace the value of memAddr with the memAddr when it is implemented
+
+        binaryOutput = f"{opcode}000{memAddr}";
+
+
+    elif (instructionType == 'F'): # Only for hlt instruction
         opcode = opcodes[instructionObject.instruction[0]];
         binaryOutput = f"{opcode}00000000000";
 
 
-
-
-    if (instructionType == None):
+    elif (instructionType == None):
         print("ERROR: For some reason, the instruction type is None. Located error in encode(). Fix ASAP.");
         return;
 
@@ -431,7 +484,7 @@ def encode(instructionObject):
 
 
 
-
+# This function converts decimal numbers (with constraints) to 8-bit binary numbers
 def convertDecimalToBinary(decimal):
     # Maximum value of decimal supported is 255. For dec=256, the binary result overflows to more than 8 bits
     binary = bin(decimal).replace('0b','');
@@ -443,58 +496,7 @@ def convertDecimalToBinary(decimal):
 
 
 
-opcodes = {
-    'add' : '10000',
-    'sub' : '10001',
-    'mov' : '10010',
-    'mov' : '10011',
-    'ld'  : '10100',
-    'st'  : '10101',
-    'mul' : '10110',
-    'div' : '10111',
-    'rs'  : '11000', 
-    'ls'  : '11001', 
-    'xor' : '11010', 
-    'or'  : '11011', 
-    'and' : '11100',
-    'not' : '11101',
-    'cmp' : '11110',
-    'jmp' : '11111', 
-    'jlt' : '01100', 
-    'jgt' : '01101', 
-    'je'  : '01111', 
-    'hlt' : '01010'
-}
-
-
-registers = {
-    'r0' : ['000',0], # In the values of the keys, value[0] stands for the binary name (str) of the register and value[1] stands for its actual dynamic value (int) in the program
-    'r1' : ['001',0],
-    'r2' : ['010',0],
-    'r3' : ['011',0],
-    'r4' : ['100',0],
-    'r5' : ['101',0],
-    'r6' : ['110',0],
-}
-
-flags = {
-    'v':0,  # overflow
-    'l':0,  # less than
-    'g':0,  # greater than
-    'e':0   # equal
-}
-
-instructionsList = [] # List contains all Instruction Objects derived from STDIN
-rawInstructionsList = []; # List contains all instrucions in raw text form derived from STDIN
-outputList = []  # List contains everything that needs to be outputted to STDOUT
-
-
-
-
-
-
-lineCount = 0; # Keep a track of the instruction's line number (Needed for ErrorGen)
-
+# Main program loop which is responsible for handling the input
 def main():
     while 1:
         try:
@@ -520,14 +522,13 @@ def main():
             print(e);
             break;
         """
-['MOVE R1 R0','hlt']
 
+
+# Function which checks the instructions and tries to catch errors. If instruction is valid, it calls encode() to generate machien code (i.e 16-bit binaries)
 def generateBinaries():
     if ('hlt' not in rawInstructionsList): # Check if hlt is missing
         print(f"Error: Missing hlt instruction at line {lineCount}");
         exit();
-
-
 
     for instructionObject in instructionsList:
         #print(instructionObject); # DO NOT uncomment when in production
@@ -538,6 +539,7 @@ def generateBinaries():
             encode(instructionObject);
 
 
+# Function which generates the stored input. Only runs if the whole ASM code is error-free 
 def output():
     for outputLine in outputList:
         print(outputLine);
@@ -550,6 +552,7 @@ def output():
 
 
 
+# All basic functions are called here --------------------------
 
 
 # Calling the main program function which will accept the input
