@@ -378,7 +378,15 @@ class Instruction:
     def je(self):
         pass
 
-
+    def var(self):                          
+        if (self.instructionLength != 2):
+            self.syntaxError()
+        
+        if (not (self.instruction[1].isalnum())):
+            self.varNameError()
+        
+        self.validInstruction = True
+        self.instructionType = "V"
 
     
     def hlt(self):
@@ -412,6 +420,13 @@ class Instruction:
         print(f'Typo in register name on line {self.lineNumber}');
         exit();
 
+    def varError(self):
+        print(f"Error on line {self.lineNumber}: Variables not declared at the begining")
+        exit()
+
+    def varNameError(self):
+        print(f"Invalid variable name declared on line {self.lineNumber}")
+        exit()
 
 
     # Solely for debugging purposes
@@ -495,6 +510,18 @@ def convertDecimalToBinary(decimal):
     return eightBitBinary;
 
 
+# ---- Memory Management Operations -----
+# counting variables declared.
+def countVarInstructions(instruction, count):       # instruction is a string containing one line of instruction.
+    if ((instruction[0]).lower() == 'var'):         # count is the current variable count which gets incremented every time a variable is declared.
+        count+=1
+
+currentVarCount = 0
+
+# Storing Labels
+dictLabels = {}             # This dictionary should contain label names given in Assembly code(key) and Memory address(value)
+
+
 
 # Main program loop which is responsible for handling the input
 def main():
@@ -507,6 +534,9 @@ def main():
             # Don't add the instruction to the instructions list when the instruction is empty or a blank line
             if (len(inputLine) == 0):
                 continue;
+            
+            global currentVarCount
+            countVarInstructions(inputLine, currentVarCount)    # counting the number of variables declared.
 
             currentInstruction = Instruction(inputLine,lineCount); # Create an Instruction object
             instructionsList.append(currentInstruction);
@@ -523,7 +553,7 @@ def main():
             break;
         """
 
-
+allVarDeclared = 0
 # Function which checks the instructions and tries to catch errors. If instruction is valid, it calls encode() to generate machien code (i.e 16-bit binaries)
 def generateBinaries():
     if ('hlt' not in rawInstructionsList): # Check if hlt is missing
@@ -531,6 +561,13 @@ def generateBinaries():
         exit();
 
     for instructionObject in instructionsList:
+        if (instructionObject.instruction[0].lower() != 'var'):
+            global allVarDeclared
+            allVarDeclared = 1
+
+        else:
+            if (allVarDeclared):
+                instructionObject.varError()
         #print(instructionObject); # DO NOT uncomment when in production
         instructionObject.checkInstructionName() # Checks the validity of the instruction's first work aka the instruction name
         instructionObject.executeInstruction();
