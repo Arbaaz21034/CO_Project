@@ -65,6 +65,7 @@ class Instruction:
         self.instructionLength = len(self.instruction); # Refers to the number of operands in the instruction (including instruction name)
         self.validInstruction = False; # All instructions are assumed to be invalid initally
         self.instructionType = None;
+        self.isLabel = 0
 
     # This method checks the validity of the instruction name (i.e the first word of the instruction)
     def checkInstructionName(self):
@@ -77,12 +78,13 @@ class Instruction:
             if (not instructionName.endswith(":")): # Checks whether the instruction name is a label or not
                 print(f"Typo in instruction name on line {self.lineNumber}");
                 exit();
+            
 
 
     # !!!!!!!!!!!! COMPLETE IT, CHECK THE TODO  !!!!!!!!!!!!!!!!!
     def executeInstruction(self):
         instructionName = self.instruction[0];
-        commonInstructions = ['add','sub','mov','ld','st','mul','div','rs','ls','xor','or',
+        commonInstructions = ['var','add','sub','mov','ld','st','mul','div','rs','ls','xor','or',
         'and','not','cmp','jmp','jlt','jgt','je','hlt']; # list does not include var and labels
         # TODO: Implement execution for var and labels as well
 
@@ -92,6 +94,13 @@ class Instruction:
             else:
                 eval(f"self.{instructionName}()"); # Neat way of executing methods based on the variable name. Alternative would have been several lines.
 
+        else: # This is a label instruction
+            self.isLabel = 1
+            instructionName = self.instruction[1]
+            if (instructionName.lower() in ["and","or","not"]): # Had to create a special way to execute and, or, not operations as they are keywords in python
+                eval(f"self.{instructionName}Instruction()");
+            else:
+                eval(f"self.{instructionName}()"); # Neat way of executing methods based on the variable name. Alternative would have been several lines.
 
 
 
@@ -560,6 +569,7 @@ def generateBinaries():
         print(f"Error: Missing hlt instruction at line {lineCount}");
         exit();
 
+    instructionNumber = 0
     for instructionObject in instructionsList:
         if (instructionObject.instruction[0].lower() != 'var'):
             global allVarDeclared
@@ -568,9 +578,13 @@ def generateBinaries():
         else:
             if (allVarDeclared):
                 instructionObject.varError()
+
         #print(instructionObject); # DO NOT uncomment when in production
         instructionObject.checkInstructionName() # Checks the validity of the instruction's first work aka the instruction name
         instructionObject.executeInstruction();
+
+        if (instructionObject.isLabel):
+            dictLabels[instructionObject.instruction[0][:-1]] == instructionNumber   # Adds Label to the dictionary of labels
 
         if (instructionObject.validInstruction):
             encode(instructionObject);
