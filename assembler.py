@@ -124,7 +124,9 @@ class Instruction:
 
             reg3[1] = reg1[1] + reg2[1]; # Actually add the registers's values and dump in reg3's value
             if (reg3[1] > 255):
+                self.resetFlags()
                 flags['v'] = 1
+                
                 reg3[1] = 0
             else:
                 self.resetFlags()
@@ -149,6 +151,7 @@ class Instruction:
 
             if (reg2[1] > reg1[1]):
                 reg3[1] = 0;
+                self.resetFlags()
                 flags['v'] = 1
     
             else:
@@ -196,13 +199,17 @@ class Instruction:
                 self.instructionType = 'C';
 
 
-        except:
+        except KeyError:
             # complete this maybe
             if (self.instruction[1].lower() == "flags"):
                 if (self.instruction[2].lower() in registers):
-                    self.resetFlags()
+
+                    flags['v'] = convertDecimalToBinary(registers[self.instruction[2].lower()][1])[4]
+                    flags['l'] = convertDecimalToBinary(registers[self.instruction[2].lower()][1])[5]
+                    flags['g'] = convertDecimalToBinary(registers[self.instruction[2].lower()][1])[6]
+                    flags['e'] = convertDecimalToBinary(registers[self.instruction[2].lower()][1])[7]
                     self.validInstruction = True;
-                    self.instructionType = 'B';
+                    self.instructionType = 'C';
                 else:    
                     self.typoError();
 
@@ -223,6 +230,7 @@ class Instruction:
             #TODO: handle overflow in  mult. Figure out when it'll occur as well
             reg3[1] = reg1[1] * reg2[1];
             if (reg3[1] > 255):
+                self.resetFlags()
                 flags['v'] = 1
                 reg3[1] = 0
             else:
@@ -437,7 +445,7 @@ class Instruction:
             # flags['l'] = 0;
             # flags['g'] = 0;
             # flags['e'] = 0;
-
+            self.resetFlags()
             if (reg1[1] == reg2[1]):
                 flags['e'] = 1;
             elif (reg1[1] > reg2[1]):
@@ -609,9 +617,9 @@ def encode(instructionObject):
 
     if (instructionType == 'A'): # 3 Registers type
         opcode = opcodes[instructionObject.instruction[0]];
-        reg1 = registers[instructionObject.instruction[1]];
-        reg2 = registers[instructionObject.instruction[2]];
-        reg3 = registers[instructionObject.instruction[3]];
+        reg1 = registers[instructionObject.instruction[1].lower()];
+        reg2 = registers[instructionObject.instruction[2].lower()];
+        reg3 = registers[instructionObject.instruction[3].lower()];
 
         binaryOutput = f"{opcode}00{reg1[0]}{reg2[0]}{reg3[0]}"; # The zeroes in this binary output are unused/filler bits
 
@@ -626,15 +634,15 @@ def encode(instructionObject):
 
     elif (instructionType == 'C'): # 2 Registers type
         opcode = opcodes[instructionObject.instruction[0]];
-        reg1 = registers[instructionObject.instruction[1]];
-        reg2 = registers[instructionObject.instruction[2]];
+        reg1 = registers[instructionObject.instruction[1].lower()];
+        reg2 = registers[instructionObject.instruction[2].lower()];
 
         binaryOutput = f"{opcode}00000{reg1[0]}{reg2[0]}";
 
 
     elif (instructionType == 'D'): # Register and memoryAddress type
         opcode = opcodes[instructionObject.instruction[0]];
-        reg1 = registers[instructionObject.instruction[1]];
+        reg1 = registers[instructionObject.instruction[1].lower()];
         memAddr = "~~~~~~~~"; # Replace the value of memAddr with the memAddr when it is implemented
 
         binaryOutput = f"{opcode}{reg1[0]}{memAddr}";
