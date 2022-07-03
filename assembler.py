@@ -101,12 +101,16 @@ class Instruction:
                 eval(f"self.{instructionName}()"); # Neat way of executing methods based on the variable name. Alternative would have been several lines.
 
         else: # This is a label instruction
-            self.isLabel = 1
-            instructionName = self.instruction[1]
-            if (instructionName.lower() in ["and","or","not"]): # Had to create a special way to execute and, or, not operations as they are keywords in python
+            self.isLabel = 1;
+            instructionName = self.instruction[1];
+            self.instruction = self.instruction[1::];
+            self.instructionLength -= 1;
+
+            if (instructionName.lower() in ["and","or","not"]): 
                 eval(f"self.{instructionName}Instruction()");
             else:
-                eval(f"self.{instructionName}()"); # Neat way of executing methods based on the variable name. Alternative would have been several lines.
+                eval(f"self.{instructionName}()"); 
+
 
     def resetFlags(self):
         flags['v'] = 0
@@ -632,7 +636,7 @@ def encode(instructionObject):
 
     elif (instructionType == 'B'): # Register and Immediate type
         opcode = opcodes[instructionObject.instruction[0]];
-        reg1 = registers[instructionObject.instruction[1]];
+        reg1 = registers[instructionObject.instruction[1].lower()];
         immValue = int(instructionObject.instruction[2].replace('$',''));
         immValueInBinary = convertDecimalToBinary(immValue); # Strictly 8-bits
         binaryOutput = f"{opcode}{reg1[0]}{immValueInBinary}";
@@ -647,7 +651,7 @@ def encode(instructionObject):
     
     elif (instructionType == 'Special Case of C'): # mov Flags Ri
         opcode = opcodes[instructionObject.instruction[0]];
-        reg1 = flagsDictionary[instructionObject.instruction[1].lower]
+        reg1 = flagsDictionary[instructionObject.instruction[1].lower()]
         reg2 = registers[instructionObject.instruction[2].lower()];
 
         binaryOutput = f"{opcode}00000{reg1[0]}{reg2[0]}";
@@ -762,7 +766,7 @@ def generateBinaries():
         
         if (instructionObject.isLabel):
             global dictLabels
-            dictLabels[instructionObject.instruction[0][:-1]] == instructionNumber - currentVarCount   # Adds Label to the dictionary of labels
+            dictLabels[instructionObject.instruction[0][:-1]] = instructionNumber - currentVarCount   # Adds Label to the dictionary of labels
 
         if (instructionObject.validInstruction):
             encode(instructionObject);
@@ -774,7 +778,7 @@ def output():
         print(outputLine);
 
     # For debugging purposes. In production, comment the line below.
-    print(registers);
+    #print(registers);
     
 
 
