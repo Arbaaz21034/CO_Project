@@ -103,8 +103,12 @@ class Instruction:
             else:
                 eval(f"self.{instructionName}()"); # Neat way of executing methods based on the variable name. Alternative would have been several lines.
 
-
-
+    def resetFlags(self):
+        flags['v'] = 0
+        flags['e'] = 0
+        flags['g'] = 0
+        flags['l'] = 0
+        # This funciton resets all the flags to zero.
 
     # All instruction methods
 
@@ -122,9 +126,8 @@ class Instruction:
             if (reg3[1] > 255):
                 flags['v'] = 1
                 reg3[1] = 0
-            
-            
-
+            else:
+                self.resetFlags()
 
             #TODO: handle overflow in addition. Figure out when it'll occur as well
             self.validInstruction = True;
@@ -144,13 +147,13 @@ class Instruction:
             reg3 = registers[self.instruction[3].lower()];
 
 
-
             if (reg2[1] > reg1[1]):
                 reg3[1] = 0;
-                flags['v'] = 1;
+                flags['v'] = 1
+    
             else:
                 reg3[1] = reg1[1] - reg2[1]; # Actually subtract the registers's values and dump in reg3's value
-
+                self.resetFlags()
 
             self.validInstruction = True;
             self.instructionType = 'A';
@@ -177,6 +180,7 @@ class Instruction:
                     self.immError()
                 reg1[1] = immValue
 
+                self.resetFlags()
                 self.validInstruction = True;
                 self.instructionType = 'B';
 
@@ -187,6 +191,7 @@ class Instruction:
                 reg2 = registers[self.instruction[2].lower()];
                 reg2[1] = reg1[1];
 
+                self.resetFlags()
                 self.validInstruction = True;
                 self.instructionType = 'C';
 
@@ -211,6 +216,8 @@ class Instruction:
             if (reg3[1] > 255):
                 flags['v'] = 1
                 reg3[1] = 0
+            else:
+                self.resetFlags()
 
             self.validInstruction = True;
             self.instructionType = 'A';
@@ -238,8 +245,10 @@ class Instruction:
             registers['r0'][1] = quotient;
             registers['r1'][1] = remainder;
 
+            self.resetFlags()
             self.validInstruction = True;
             self.instructionType = 'C';
+            
 
         except KeyError:
             self.typoError();
@@ -257,6 +266,10 @@ class Instruction:
             if (memAddr not in dictVariables):
                 self.varNotDeclaredError()
 
+            self.resetFlags()
+            self.validInstruction = True;
+            self.instructionType = 'D';
+
         except KeyError:
             self.typoError()
 
@@ -269,6 +282,10 @@ class Instruction:
             global dictVariables
             if (memAddr not in dictVariables):
                 self.varNotDeclaredError()
+
+            self.resetFlags()
+            self.validInstruction = True;
+            self.instructionType = 'D';
 
         except KeyError:
             self.typoError()
@@ -289,8 +306,10 @@ class Instruction:
 
             newValue = reg1[1] >> immValue;
             reg1[1] = newValue;
+
             self.validInstruction = True;
             self.instructionType = 'B';
+            self.resetFlags()
 
         except KeyError:
             self.typoError();
@@ -309,6 +328,8 @@ class Instruction:
 
             newValue = reg1[1] << immValue;
             reg1[1] = newValue;
+
+            self.resetFlags()
             self.validInstruction = True;
             self.instructionType = 'B';
 
@@ -325,6 +346,8 @@ class Instruction:
             reg3 = registers[self.instruction[3].lower()];
 
             reg3[1] = reg1[1] ^ reg2[1];
+
+            self.resetFlags()
             self.validInstruction = True;
             self.instructionType = 'A';
         
@@ -343,6 +366,8 @@ class Instruction:
             reg3 = registers[self.instruction[3].lower()];
 
             reg3[1] = reg1[1] | reg2[1];
+            
+            self.resetFlags()
             self.validInstruction = True;
             self.instructionType = 'A';
         
@@ -361,6 +386,8 @@ class Instruction:
             reg3 = registers[self.instruction[3].lower()];
 
             reg3[1] = reg1[1] & reg2[1];
+
+            self.resetFlags()
             self.validInstruction = True;
             self.instructionType = 'A';
         
@@ -378,6 +405,8 @@ class Instruction:
             reg2 = registers[self.instruction[2].lower()];
 
             reg1[1] = ~reg2[1];
+
+            self.resetFlags()
             self.validInstruction = True;
             self.instructionType = "C";
             
@@ -393,11 +422,12 @@ class Instruction:
             reg1 = registers[self.instruction[1].lower()];
             reg2 = registers[self.instruction[2].lower()];
 
+            # these will be handled from the previous instruction no need to reset before(remove this block of comments)
             # not sure if the overflow flag will be reset here as well or not. For now, I'm not resetting it.
-            flags['v'] = 0;
-            flags['l'] = 0;
-            flags['g'] = 0;
-            flags['e'] = 0;
+            # flags['v'] = 0;
+            # flags['l'] = 0;
+            # flags['g'] = 0;
+            # flags['e'] = 0;
 
             if (reg1[1] == reg2[1]):
                 flags['e'] = 1;
@@ -405,6 +435,7 @@ class Instruction:
                 flags['g'] = 1;
             elif (reg1[1] < reg2[1]):
                 flags['l'] = 1;
+                
 
             self.validInstruction = True;
             self.instructionType = "C";
@@ -424,9 +455,14 @@ class Instruction:
             global dictLabels
             if (memAddr not in dictLabels):
                 self.labelNotDeclaredError()
+            
+            self.resetFlags()
+            self.validInstruction = True;
+            self.instructionType = "E";
 
         except KeyError:
             self.typoError()
+
 
 
     def jlt(self):
@@ -438,6 +474,10 @@ class Instruction:
             global dictLabels
             if (memAddr not in dictLabels):
                 self.labelNotDeclaredError()
+
+            self.resetFlags()
+            self.validInstruction = True;
+            self.instructionType = "E";
 
         except KeyError:
             self.typoError()
@@ -452,6 +492,10 @@ class Instruction:
             global dictLabels
             if (memAddr not in dictLabels):
                 self.labelNotDeclaredError()
+            
+            self.resetFlags()
+            self.validInstruction = True;
+            self.instructionType = "E";
 
         except KeyError:
             self.typoError()
@@ -466,6 +510,10 @@ class Instruction:
             global dictLabels
             if (memAddr not in dictLabels):
                 self.labelNotDeclaredError()
+            
+            self.resetFlags()
+            self.validInstruction = True;
+            self.instructionType = "E";
 
         except KeyError:
             self.typoError()
