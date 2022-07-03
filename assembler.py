@@ -119,6 +119,11 @@ class Instruction:
             reg3 = registers[self.instruction[3].lower()];
 
             reg3[1] = reg1[1] + reg2[1]; # Actually add the registers's values and dump in reg3's value
+            if (reg3[1] > 255):
+                flags['v'] = 1
+                reg3[1] = 0
+            
+            
 
 
             #TODO: handle overflow in addition. Figure out when it'll occur as well
@@ -168,7 +173,9 @@ class Instruction:
                 # complete later on for immediate/const values
                 # TODO: Check if the immValue does not EXCEED 8 bits (or, is > 255 in dec)
                 immValue = int(self.instruction[2].replace('$',''));
-                reg1[1] = immValue;
+                if (immValue > 255):
+                    self.immError()
+                reg1[1] = immValue
 
                 self.validInstruction = True;
                 self.instructionType = 'B';
@@ -201,6 +208,10 @@ class Instruction:
 
             #TODO: handle overflow in  mult. Figure out when it'll occur as well
             reg3[1] = reg1[1] * reg2[1];
+            if (reg3[1] > 255):
+                flags['v'] = 1
+                reg3[1] = 0
+
             self.validInstruction = True;
             self.instructionType = 'A';
 
@@ -272,6 +283,8 @@ class Instruction:
         try:
             reg1 = registers[self.instruction[1].lower()];
             immValue = int(self.instruction[2].replace('$',''));
+            if (immValue > 255):
+                self.immError()
             # TODO: Check if the imm value is 8 bit or not. Throw an error if it isn't. Do this for every function where an immediate value is used
 
             newValue = reg1[1] >> immValue;
@@ -290,6 +303,8 @@ class Instruction:
         try:
             reg1 = registers[self.instruction[1].lower()];
             immValue = int(self.instruction[2].replace('$',''));
+            if (immValue > 255):
+                self.immError()
             # TODO: Check if the imm value is 8 bit or not. Throw an error if it isn't. Do this for every function where an immediate value is used
 
             newValue = reg1[1] << immValue;
@@ -513,7 +528,10 @@ class Instruction:
     def labelNotDeclaredError(self):
         print(f"Label not declared on line {self.lineNumber}")
         exit()
-
+    
+    def immError(self):
+        print(f"Illegal immediate value on line {self.lineNumber}")
+        exit()
 
 
 
