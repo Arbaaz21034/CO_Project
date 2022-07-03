@@ -66,6 +66,7 @@ class Instruction:
         self.validInstruction = False; # All instructions are assumed to be invalid initally
         self.instructionType = None;
         self.isLabel = 0
+        self.isVar = 0
 
     # This method checks the validity of the instruction name (i.e the first word of the instruction)
     def checkInstructionName(self):
@@ -235,6 +236,31 @@ class Instruction:
 
     # TODO: Create methods for LOAD (ld) and STORE (st)
 
+    def ld(self):
+        if (self.instructionLength != 3):
+            self.syntaxError()
+        try:
+            reg1 = registers[self.instruction[1].lower()]
+            memAddr = self.instructionLength
+            if (memAddr not in dictVariables):
+                self.varNotDeclaredError()
+
+        except KeyError:
+            self.typoError()
+
+    def st(self):
+        if (self.instructionLength != 3):
+            self.syntaxError()
+        try:
+            reg1 = registers[self.instruction[1].lower()]
+            memAddr = self.instructionLength
+            if (memAddr not in dictVariables):
+                self.varNotDeclaredError()
+
+        except KeyError:
+            self.typoError()
+
+                
 
 
     def rs(self):
@@ -396,6 +422,7 @@ class Instruction:
         
         self.validInstruction = True
         self.instructionType = "V"
+        self.isVar = 1
 
     
     def hlt(self):
@@ -436,6 +463,11 @@ class Instruction:
     def varNameError(self):
         print(f"Invalid variable name declared on line {self.lineNumber}")
         exit()
+    
+    def varNotDeclaredError(self):
+        print(f"Variable not declared on line {self.lineNumber}")
+        exit()
+
 
 
     # Solely for debugging purposes
@@ -527,9 +559,9 @@ def countVarInstructions(instruction, count):       # instruction is a string co
 
 currentVarCount = 0
 
-# Storing Labels
+# Storing Labels and Variables
 dictLabels = {}             # This dictionary should contain label names given in Assembly code(key) and Memory address(value)
-
+dictVariables = {}          # This dictionary should contain label names given in Assembly code(key) and Memory address(value)
 
 
 # Main program loop which is responsible for handling the input
@@ -543,7 +575,7 @@ def main():
             # Don't add the instruction to the instructions list when the instruction is empty or a blank line
             if (len(inputLine) == 0):
                 continue;
-            
+    
             global currentVarCount
             countVarInstructions(inputLine, currentVarCount)    # counting the number of variables declared.
 
@@ -583,8 +615,13 @@ def generateBinaries():
         instructionObject.checkInstructionName() # Checks the validity of the instruction's first work aka the instruction name
         instructionObject.executeInstruction();
 
+        if (instructionObject.isVar):
+            global dictVariables
+            dictVariables[instructionObject.instruction[1]] = len(instructionsList) + currentVarCount
+        
         if (instructionObject.isLabel):
-            dictLabels[instructionObject.instruction[0][:-1]] == instructionNumber   # Adds Label to the dictionary of labels
+            global dictLabels
+            dictLabels[instructionObject.instruction[0][:-1]] == instructionNumber - currentVarCount   # Adds Label to the dictionary of labels
 
         if (instructionObject.validInstruction):
             encode(instructionObject);
