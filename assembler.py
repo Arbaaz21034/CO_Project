@@ -242,6 +242,7 @@ class Instruction:
         try:
             reg1 = registers[self.instruction[1].lower()]
             memAddr = self.instructionLength
+            global dictVariables
             if (memAddr not in dictVariables):
                 self.varNotDeclaredError()
 
@@ -254,6 +255,7 @@ class Instruction:
         try:
             reg1 = registers[self.instruction[1].lower()]
             memAddr = self.instructionLength
+            global dictVariables
             if (memAddr not in dictVariables):
                 self.varNotDeclaredError()
 
@@ -399,19 +401,59 @@ class Instruction:
             self.typoError();
 
     def jmp(self):
-        pass
+        if (self.instructionLength != 3):
+            self.syntaxError()
+        try:
+            reg1 = registers[self.instruction[1].lower()]
+            memAddr = self.instructionLength
+            global dictLabels
+            if (memAddr not in dictLabels):
+                self.labelNotDeclaredError()
+
+        except KeyError:
+            self.typoError()
 
 
     def jlt(self):
-        pass
+        if (self.instructionLength != 3):
+            self.syntaxError()
+        try:
+            reg1 = registers[self.instruction[1].lower()]
+            memAddr = self.instructionLength
+            global dictLabels
+            if (memAddr not in dictLabels):
+                self.labelNotDeclaredError()
+
+        except KeyError:
+            self.typoError()
 
 
     def jgt(self):
-        pass
+        if (self.instructionLength != 3):
+            self.syntaxError()
+        try:
+            reg1 = registers[self.instruction[1].lower()]
+            memAddr = self.instructionLength
+            global dictLabels
+            if (memAddr not in dictLabels):
+                self.labelNotDeclaredError()
+
+        except KeyError:
+            self.typoError()
 
 
     def je(self):
-        pass
+        if (self.instructionLength != 3):
+            self.syntaxError()
+        try:
+            reg1 = registers[self.instruction[1].lower()]
+            memAddr = self.instructionLength
+            global dictLabels
+            if (memAddr not in dictLabels):
+                self.labelNotDeclaredError()
+
+        except KeyError:
+            self.typoError()
 
     def var(self):                          
         if (self.instructionLength != 2):
@@ -467,6 +509,11 @@ class Instruction:
     def varNotDeclaredError(self):
         print(f"Variable not declared on line {self.lineNumber}")
         exit()
+
+    def labelNotDeclaredError(self):
+        print(f"Label not declared on line {self.lineNumber}")
+        exit()
+
 
 
 
