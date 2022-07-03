@@ -198,8 +198,17 @@ class Instruction:
 
         except:
             # complete this maybe
-            self.typoError();
-            pass
+            if (self.instruction[1].lower() == "flags"):
+                if (self.instruction[2].lower() in registers):
+                    self.resetFlags()
+                    self.validInstruction = True;
+                    self.instructionType = 'B';
+                else:    
+                    self.typoError();
+
+            else:
+                self.typoError();
+            
 
     def mul(self):
         if (self.instructionLength != 4):
