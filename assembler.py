@@ -22,7 +22,7 @@ Project Authors:
 
 
 opcodes = {
-    'add' : '10000', 'sub' : '10001', 'mov' : '10010', 'mov' : '10011',
+    'add' : '10000', 'sub' : '10001', 'mov' : '10011', 'movimm' : '10010',
     'ld'  : '10100', 'st'  : '10101', 'mul' : '10110', 'div' : '10111',
     'rs'  : '11000', 'ls'  : '11001', 'xor' : '11010', 'or'  : '11011', 
     'and' : '11100', 'not' : '11101', 'cmp' : '11110', 'jmp' : '11111', 
@@ -184,6 +184,7 @@ class Instruction:
                 reg1[1] = immValue
 
                 self.resetFlags()
+                self.instruction[0] = "movimm";
                 self.validInstruction = True;
                 self.instructionType = 'B';
 
@@ -659,9 +660,7 @@ def encode(instructionObject):
         opcode = opcodes[instructionObject.instruction[0]];
         binaryOutput = f"{opcode}00000000000";
 
-
-    elif (instructionType == None):
-        print("ERROR: For some reason, the instruction type is None. Located error in encode(). Fix ASAP.");
+    elif (instructionType == 'V'): # For var instruction
         return;
 
     outputList.append(binaryOutput);
