@@ -278,7 +278,7 @@ class Instruction:
             self.syntaxError()
         try:
             reg1 = registers[self.instruction[1].lower()]
-            memAddr = self.instructionLength
+            memAddr = self.instruction[2]
             global dictVariables
             if (memAddr not in dictVariables):
                 self.varNotDeclaredError()
@@ -295,7 +295,7 @@ class Instruction:
             self.syntaxError()
         try:
             reg1 = registers[self.instruction[1].lower()]
-            memAddr = self.instructionLength
+            memAddr = self.instruction[2]
             global dictVariables
             if (memAddr not in dictVariables):
                 self.varNotDeclaredError()
@@ -468,7 +468,7 @@ class Instruction:
             self.syntaxError()
         try:
             reg1 = registers[self.instruction[1].lower()]
-            memAddr = self.instructionLength
+            memAddr = self.instruction[2]
             global dictLabels
             if (memAddr not in dictLabels):
                 self.labelNotDeclaredError()
@@ -487,7 +487,7 @@ class Instruction:
             self.syntaxError()
         try:
             reg1 = registers[self.instruction[1].lower()]
-            memAddr = self.instructionLength
+            memAddr = self.instruction[2]
             global dictLabels
             if (memAddr not in dictLabels):
                 self.labelNotDeclaredError()
@@ -505,7 +505,7 @@ class Instruction:
             self.syntaxError()
         try:
             reg1 = registers[self.instruction[1].lower()]
-            memAddr = self.instructionLength
+            memAddr = self.instruction[2]
             global dictLabels
             if (memAddr not in dictLabels):
                 self.labelNotDeclaredError()
@@ -523,7 +523,7 @@ class Instruction:
             self.syntaxError()
         try:
             reg1 = registers[self.instruction[1].lower()]
-            memAddr = self.instructionLength
+            memAddr = self.instruction[2]
             global dictLabels
             if (memAddr not in dictLabels):
                 self.labelNotDeclaredError()
