@@ -42,6 +42,11 @@ flags = {
     'e':0   # equal
 }
 
+# For handling Special Case of C type instruction
+flagsDictionary = {
+    'flags': [111, 0]
+}
+
 instructionsList = [] # List contains all Instruction Objects derived from STDIN
 rawInstructionsList = []; # List contains all instrucions in raw text form derived from STDIN
 outputList = []  # List contains everything that needs to be outputted to STDOUT
@@ -210,7 +215,7 @@ class Instruction:
                     flags['g'] = convertDecimalToBinary(registers[self.instruction[2].lower()][1])[6]
                     flags['e'] = convertDecimalToBinary(registers[self.instruction[2].lower()][1])[7]
                     self.validInstruction = True;
-                    self.instructionType = 'C';
+                    self.instructionType = 'Special case of C';
                 else:    
                     self.typoError();
 
@@ -639,19 +644,26 @@ def encode(instructionObject):
         reg2 = registers[instructionObject.instruction[2].lower()];
 
         binaryOutput = f"{opcode}00000{reg1[0]}{reg2[0]}";
+    
+    elif (instructionType == 'Special Case of C'): # mov Flags Ri
+        opcode = opcodes[instructionObject.instruction[0]];
+        reg1 = flagsDictionary[instructionObject.instruction[1].lower]
+        reg2 = registers[instructionObject.instruction[2].lower()];
+
+        binaryOutput = f"{opcode}00000{reg1[0]}{reg2[0]}";
 
 
     elif (instructionType == 'D'): # Register and memoryAddress type
         opcode = opcodes[instructionObject.instruction[0]];
         reg1 = registers[instructionObject.instruction[1].lower()];
-        memAddr = "~~~~~~~~"; # Replace the value of memAddr with the memAddr when it is implemented
+        memAddr = dictVariables[instructionObject.instruction[2]]
 
         binaryOutput = f"{opcode}{reg1[0]}{memAddr}";
 
 
     elif (instructionType == 'E'): # Only memoryAddress type
         opcode = opcodes[instructionObject.instruction[0]];
-        memAddr = "~~~~~~~~"; # Replace the value of memAddr with the memAddr when it is implemented
+        memAddr = dictLabels[instructionObject.instruction[2]]
 
         binaryOutput = f"{opcode}000{memAddr}";
 
