@@ -83,8 +83,11 @@ class Instruction:
                 eval(f"self.{instructionName}()"); # Neat way of executing methods based on the variable name. Alternative would have been several lines.
 
         else: # This is a label instruction
-            try:
-                #labelName = self.instruction[0]; # Use this variable in case of label naming checks
+            try: 
+                if (not (self.instruction[0][:-1].isalnum())):
+                    self.labelNameError()
+                if (self.instruction[0][:-1] in dictVariables):
+                    self.misuseOfVariableAsLabel()
                 self.isLabel = 1;
                 instructionName = self.instruction[1];
                 self.instruction = self.instruction[1::];
@@ -459,7 +462,10 @@ class Instruction:
             memAddr = self.instruction[2]
             global dictLabels
             if (memAddr not in dictLabels):
-                self.labelNotDeclaredError()
+                if (memAddr in dictVariables):
+                    self.misuseOfVariableAsLabel()
+                else:
+                    self.labelNotDeclaredError()
             
             self.resetFlags()
             self.validInstruction = True;
@@ -478,7 +484,10 @@ class Instruction:
             memAddr = self.instruction[2]
             global dictLabels
             if (memAddr not in dictLabels):
-                self.labelNotDeclaredError()
+                if (memAddr in dictVariables):
+                    self.misuseOfVariableAsLabel()
+                else:
+                    self.labelNotDeclaredError()
 
             self.resetFlags()
             self.validInstruction = True;
@@ -496,7 +505,10 @@ class Instruction:
             memAddr = self.instruction[2]
             global dictLabels
             if (memAddr not in dictLabels):
-                self.labelNotDeclaredError()
+                if (memAddr in dictVariables):
+                    self.misuseOfVariableAsLabel()
+                else:
+                    self.labelNotDeclaredError()
             
             self.resetFlags()
             self.validInstruction = True;
@@ -514,7 +526,10 @@ class Instruction:
             memAddr = self.instruction[2]
             global dictLabels
             if (memAddr not in dictLabels):
-                self.labelNotDeclaredError()
+                if (memAddr in dictVariables):
+                    self.misuseOfVariableAsLabel()
+                else:
+                    self.labelNotDeclaredError()
             
             self.resetFlags()
             self.validInstruction = True;
@@ -560,24 +575,34 @@ class Instruction:
         exit();
 
     def varError(self):
-        print(f"Error on line {self.lineNumber}: Variable not declared at the begining");
+        print(f"Error on line {self.lineNumber}: Variables not declared at the beginning")
         exit()
 
     def varNameError(self):
-        print(f"Invalid variable name declared on line {self.lineNumber}")
+        print(f"Invalid variable name used on line {self.lineNumber}")
+        exit()
+    
+    def labelNameError(self):
+        print(f"Invalid label name used on line {self.lineNumber}")
         exit()
     
     def varNotDeclaredError(self):
-        print(f"Variable not declared on line {self.lineNumber}")
+        print(f"Use of undefined variable on line {self.lineNumber}")
         exit()
 
     def labelNotDeclaredError(self):
-        print(f"Label not declared on line {self.lineNumber}")
+        print(f"Use of undefined label on line {self.lineNumber}")
+        exit()
+
+    def misuseOfVariableAsLabel(self):
+        print(f"Misuse of Variable as Label on line {self.lineNumber}")
         exit()
     
     def immError(self):
         print(f"Illegal immediate value on line {self.lineNumber}")
         exit()
+
+    
 
 
 
