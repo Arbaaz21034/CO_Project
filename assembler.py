@@ -2,7 +2,6 @@
 Project Name:
     Computer Organization CSE112 - Q1: Assembler for Midsem Evaluation 2022
 
-
 Project Authors:
     Arman Rajesh Ganjoo    (2021018)
     Chaitanya Arora        (2021033)
@@ -10,16 +9,7 @@ Project Authors:
 
 """
 
-# Some notes to remember:
-# Apparently, registers are 16 bits in Q1
-
-# FIXME: Fix flag stuff (High Alert)
-
-
-
-
 # Declaring all the global variables here -------------------
-
 
 opcodes = {
     'add' : '10000', 'sub' : '10001', 'mov' : '10011', 'movimm' : '10010',
@@ -50,12 +40,7 @@ flagsDictionary = {
 instructionsList = [] # List contains all Instruction Objects derived from STDIN
 rawInstructionsList = []; # List contains all instrucions in raw text form derived from STDIN
 outputList = []  # List contains everything that needs to be outputted to STDOUT
-
 lineCount = 0; # Keep a track of the instruction's line number (Needed for ErrorGen)
-
-
-
-
 
 
 # Actual Implementation starts here -------------------
@@ -80,37 +65,38 @@ class Instruction:
         'and','not','cmp','jmp','jlt','jgt','je','hlt'];
 
         # Seeking errors
-        if (instructionName.lower() not in validInstructionNames):
+        if (instructionName not in validInstructionNames):
             if (not instructionName.endswith(":")): # Checks whether the instruction name is a label or not
                 print(f"Typo in instruction name on line {self.lineNumber}");
                 exit();
             
 
-
-    # !!!!!!!!!!!! COMPLETE IT, CHECK THE TODO  !!!!!!!!!!!!!!!!!
     def executeInstruction(self):
         instructionName = self.instruction[0];
         commonInstructions = ['var','add','sub','mov','ld','st','mul','div','rs','ls','xor','or',
-        'and','not','cmp','jmp','jlt','jgt','je','hlt']; # list does not include var and labels
-        # TODO: Implement execution for var and labels as well
+        'and','not','cmp','jmp','jlt','jgt','je','hlt']; # list does not include labels as labels have custom names
 
-        if (instructionName.lower() in commonInstructions):
-            if (instructionName.lower() in ["and","or","not"]): # Had to create a special way to execute and, or, not operations as they are keywords in python
+        if (instructionName in commonInstructions):
+            if (instructionName in ["and","or","not"]): # Had to create a special way to execute and, or, not operations as they are keywords in python
                 eval(f"self.{instructionName}Instruction()");
             else:
                 eval(f"self.{instructionName}()"); # Neat way of executing methods based on the variable name. Alternative would have been several lines.
 
         else: # This is a label instruction
-            self.isLabel = 1;
-            instructionName = self.instruction[1];
-            self.instruction = self.instruction[1::];
-            self.instructionLength -= 1;
+            try:
+                #labelName = self.instruction[0]; # Use this variable in case of label naming checks
+                self.isLabel = 1;
+                instructionName = self.instruction[1];
+                self.instruction = self.instruction[1::];
+                self.instructionLength -= 1;
 
-            if (instructionName.lower() in ["and","or","not"]): 
-                eval(f"self.{instructionName}Instruction()");
-            else:
-                eval(f"self.{instructionName}()"); 
-
+                if (instructionName in ["and","or","not"]): 
+                    eval(f"self.{instructionName}Instruction()");
+                else:
+                    eval(f"self.{instructionName}()"); 
+            except:
+                print(f'Error: Incorrect syntax after the label on line {self.lineNumber}');
+                exit();
 
     def resetFlags(self):
         flags['v'] = 0
@@ -140,7 +126,6 @@ class Instruction:
             else:
                 self.resetFlags()
 
-            #TODO: handle overflow in addition. Figure out when it'll occur as well
             self.validInstruction = True;
             self.instructionType = 'A';
 
@@ -178,6 +163,7 @@ class Instruction:
 
 
     def mov(self):
+
         if (self.instructionLength != 3):
             self.syntaxError();
 
@@ -185,8 +171,6 @@ class Instruction:
             reg1 = registers[self.instruction[1].lower()];
 
             if (self.instruction[2].startswith('$')): # Mov immediate
-                # complete later on for immediate/const values
-                # TODO: Check if the immValue does not EXCEED 8 bits (or, is > 255 in dec)
                 immValue = int(self.instruction[2].replace('$',''));
                 if (immValue > 255):
                     self.immError()
@@ -236,8 +220,6 @@ class Instruction:
             reg2 = registers[self.instruction[2].lower()];
             reg3 = registers[self.instruction[3].lower()];
 
-
-            #TODO: handle overflow in  mult. Figure out when it'll occur as well
             reg3[1] = reg1[1] * reg2[1];
             if (reg3[1] > 255):
                 self.resetFlags()
@@ -280,8 +262,6 @@ class Instruction:
         except KeyError:
             self.typoError();
 
-
-    # TODO: Create methods for LOAD (ld) and STORE (st)
 
     def ld(self):
         if (self.instructionLength != 3):
@@ -329,7 +309,6 @@ class Instruction:
             immValue = int(self.instruction[2].replace('$',''));
             if (immValue > 255):
                 self.immError()
-            # TODO: Check if the imm value is 8 bit or not. Throw an error if it isn't. Do this for every function where an immediate value is used
 
             newValue = reg1[1] >> immValue;
             reg1[1] = newValue;
@@ -351,7 +330,6 @@ class Instruction:
             immValue = int(self.instruction[2].replace('$',''));
             if (immValue > 255):
                 self.immError()
-            # TODO: Check if the imm value is 8 bit or not. Throw an error if it isn't. Do this for every function where an immediate value is used
 
             newValue = reg1[1] << immValue;
             reg1[1] = newValue;
@@ -558,7 +536,6 @@ class Instruction:
 
     
     def hlt(self):
-        # FIXME: Maybe the hlt keyword must be the last instruction
         if (self.instructionLength != 1):
             self.syntaxError();
         if (rawInstructionsList[-1] != "hlt"): # Check if hlt is not used as the last instruction (which is illegal)
@@ -566,12 +543,6 @@ class Instruction:
 
         self.validInstruction = True;
         self.instructionType = 'F';
-
-
-
-
-
-
 
 
     # All error methods
@@ -589,7 +560,7 @@ class Instruction:
         exit();
 
     def varError(self):
-        print(f"Error on line {self.lineNumber}: Variables not declared at the begining")
+        print(f"Error on line {self.lineNumber}: Variable not declared at the begining");
         exit()
 
     def varNameError(self):
@@ -682,9 +653,6 @@ def encode(instructionObject):
     outputList.append(binaryOutput);
 
 
-
-
-
 # This function converts decimal numbers (with constraints) to 8-bit binary numbers
 def convertDecimalToBinary(decimal):
     # Maximum value of decimal supported is 255. For dec=256, the binary result overflows to more than 8 bits
@@ -702,12 +670,12 @@ def countVarInstructions(instruction, count):       # instruction is a string co
     if ((instruction[0]).lower() == 'var'):         # count is the current variable count which gets incremented every time a variable is declared.
         count+=1
 
-currentVarCount = 0
 
+currentVarCount = 0
 # Storing Labels and Variables
 dictLabels = {}             # This dictionary should contain label names given in Assembly code(key) and Memory address(value)
 dictVariables = {}          # This dictionary should contain label names given in Assembly code(key) and Memory address(value)
-
+allVarDeclared = 0;
 
 # Main program loop which is responsible for handling the input
 def main():
@@ -732,18 +700,19 @@ def main():
             #print("\nAssembly input terminated. Generating your machine code.\n");
             break;
 
-        """
-        except Exception as e:
-            print("An unknown error occured. The error message is given below.");
-            print(e);
-            break;
-        """
 
-allVarDeclared = 0
 # Function which checks the instructions and tries to catch errors. If instruction is valid, it calls encode() to generate machien code (i.e 16-bit binaries)
 def generateBinaries():
     if ('hlt' not in rawInstructionsList): # Check if hlt is missing
         print(f"Error: Missing hlt instruction at line {lineCount}");
+        exit();
+
+    if (rawInstructionsList.count('hlt') > 1):
+        print(f"Error: Not allowed to have more than 1 hlt instruction");
+        exit();
+
+    if (len(instructionsList) > 256):
+        print(f"Error: Exceeded the maximum amount (256) of instructions allowed");
         exit();
 
     instructionNumber = 0
@@ -779,14 +748,9 @@ def output():
 
     # For debugging purposes. In production, comment the line below.
     #print(registers);
-    
-
-
-
 
 
 # All basic functions are called here --------------------------
-
 
 # Calling the main program function which will accept the input
 main()
@@ -794,4 +758,3 @@ main()
 generateBinaries()
 # Calling the program which will output the 16-bit binaries line by line
 output()
-
