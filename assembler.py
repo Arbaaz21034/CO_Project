@@ -11,6 +11,10 @@ Project Authors:
 
 # Declaring all the global variables here -------------------
 
+from curses import raw
+from weakref import ref
+
+
 opcodes = {
     'add' : '10000', 'sub' : '10001', 'mov' : '10011', 'movimm' : '10010',
     'ld'  : '10100', 'st'  : '10101', 'mul' : '10110', 'div' : '10111',
@@ -83,30 +87,28 @@ class Instruction:
                 eval(f"self.{instructionName}()"); # Neat way of executing methods based on the variable name. Alternative would have been several lines.
 
         else: # This is a label instruction
-            try: 
-                if (not (self.instruction[0][:-1].isalnum())):
-                    self.labelNameError()
-                if (self.instruction[0][:-1] in dictVariables):
-                    self.misuseOfVariableAsLabel()
-                self.isLabel = 1;
-                instructionName = self.instruction[1];
-                self.instruction = self.instruction[1::];
-                self.instructionLength -= 1;
+            if (not (self.instruction[0][:-1].isalnum())):
+                self.labelNameError()
+            if (self.instruction[0][:-1] in dictVariables):
+                self.misuseOfVariableAsLabel()
 
-                if (instructionName in ["and","or","not"]): 
-                    eval(f"self.{instructionName}Instruction()");
-                else:
-                    eval(f"self.{instructionName}()"); 
-            except:
-                print(f'Error: Incorrect syntax after the label on line {self.lineNumber}');
-                exit();
+            self.isLabel = 1;
+            instructionName = self.instruction[1];
+            self.instruction = self.instruction[1::]; # Makes the instruction equivalent to the instruction on right of the label
+            self.instructionLength = len(self.instruction);
+
+            if (instructionName in ["and","or","not"]): 
+                eval(f"self.{instructionName}Instruction()");
+            else:
+                eval(f"self.{instructionName}()"); 
+
 
     def resetFlags(self):
         flags['v'] = 0
         flags['e'] = 0
         flags['g'] = 0
         flags['l'] = 0
-        # This funciton resets all the flags to zero.
+        # This function resets all the flags to zero.
 
     # All instruction methods
 
@@ -299,8 +301,6 @@ class Instruction:
 
         except KeyError:
             self.typoError()
-
-                
 
 
     def rs(self):
