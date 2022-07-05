@@ -11,9 +11,6 @@ Project Authors:
 
 # Declaring all the global variables here -------------------
 
-from curses import raw
-from weakref import ref
-
 
 opcodes = {
     'add' : '10000', 'sub' : '10001', 'mov' : '10011', 'movimm' : '10010',
