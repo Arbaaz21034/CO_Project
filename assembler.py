@@ -43,7 +43,6 @@ rawInstructionsList = []; # List contains all instrucions in raw text form deriv
 outputList = []  # List contains everything that needs to be outputted to STDOUT
 lineCount = 0; # Keep a track of the instruction's line number (Needed for ErrorGen)
 
-
 # Actual Implementation starts here -------------------
 
 
@@ -85,6 +84,8 @@ class Instruction:
 
         else: # This is a label instruction
             if (not (self.instruction[0][:-1].isalnum())):
+                self.labelNameError()
+            if (self.instruction[0][:-1] in dictLabels):
                 self.labelNameError()
             if (self.instruction[0][:-1] in dictVariables):
                 self.misuseOfVariableAsLabel()
@@ -540,6 +541,9 @@ class Instruction:
             self.syntaxError()
         
         if (not (self.instruction[1].isalnum())):
+            self.varNameError()
+        
+        if (self.instruction[1] in dictVariables):
             self.varNameError()
         
         self.validInstruction = True
