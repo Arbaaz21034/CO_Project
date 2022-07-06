@@ -25,16 +25,16 @@ flagsDictionary = {
     'flags': [111, 0]
 }
 instructionsList = [] # List contains all Instruction Objects derived from STDIN
-rawInstructionsList = []; # List contains all instrucions in raw text form derived from STDIN
+rawInstructionsList = [] # List contains all instrucions in raw text form derived from STDIN
 outputList = []  # List contains everything that needs to be outputted to STDOUT
-lineCount = 0; # Keep a track of the instruction's line number (Needed for ErrorGen)
+lineCount = 0 # Keep a track of the instruction's line number (Needed for ErrorGen)
 # This is a list of keywords for checking label name and variable name.
 keywords = ['r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'flags', 'and', 'or', 'not', 'add', 'sub', 'mov', 'ld', 'st', 'mul', 'div', 'rs', 'ls', 'xor', 'cmp', 'jmp', 'jlt', 'jgt', 'je', 'hlt']
 currentVarCount = 0
 # Storing Labels and Variables
 dictLabels = {}             # This dictionary should contain label names given in Assembly code(key) and Memory address(value)
 dictVariables = {}          # This dictionary should contain label names given in Assembly code(key) and Memory address(value)
-allVarDeclared = 0;
+allVarDeclared = 0
 
 # Actual Implementation starts here -------------------
 
@@ -42,11 +42,11 @@ allVarDeclared = 0;
 class Instruction:
     # Initiate the Instruction object with the assembly instruction derived from stdin
     def __init__(self, asmInstruction, lineNumber):
-        self.instruction = asmInstruction.split(); # is a list 
-        self.lineNumber = lineNumber;
-        self.instructionLength = len(self.instruction); # Refers to the number of operands in the instruction (including instruction name)
-        self.validInstruction = False; # All instructions are assumed to be invalid initally
-        self.instructionType = None;
+        self.instruction = asmInstruction.split() # is a list 
+        self.lineNumber = lineNumber
+        self.instructionLength = len(self.instruction) # Refers to the number of operands in the instruction (including instruction name)
+        self.validInstruction = False # All instructions are assumed to be invalid initally
+        self.instructionType = None
         self.isLabel = 0
         self.isVar = 0
         self.labelName = 0
@@ -54,34 +54,34 @@ class Instruction:
 
     # This method checks the validity of the instruction name (i.e the first word of the instruction)
     def checkInstructionName(self):
-        instructionName = self.instruction[0];
+        instructionName = self.instruction[0]
         validInstructionNames = ['var','add','sub','mov','ld','st','mul','div','rs','ls','xor','or',
-        'and','not','cmp','jmp','jlt','jgt','je','hlt'];
+        'and','not','cmp','jmp','jlt','jgt','je','hlt']
 
         # Seeking errors
         if (instructionName not in validInstructionNames):
             if (not instructionName.endswith(":")): # Checks whether the instruction name is a label or not
-                print(f"Typo in instruction name on line {self.lineNumber}");
-                exit();  
+                print(f"Typo in instruction name on line {self.lineNumber}")
+                exit()  
 
 
     def executeInstruction(self):
-        instructionName = self.instruction[0];
+        instructionName = self.instruction[0]
         commonInstructions = ['var','add','sub','mov','ld','st','mul','div','rs','ls','xor','or',
-        'and','not','cmp','jmp','jlt','jgt','je','hlt']; # list does not include labels as labels have custom names
-        toLowerCase = lambda x : x.lower();
+        'and','not','cmp','jmp','jlt','jgt','je','hlt'] # list does not include labels as labels have custom names
+        toLowerCase = lambda x : x.lower()
 
 
-        instructionsListLower = map(toLowerCase,self.instruction);
+        instructionsListLower = map(toLowerCase,self.instruction)
 
         if ("flags" in instructionsListLower and instructionName != "mov"):
-            self.illegalUseOfFlagsError();
+            self.illegalUseOfFlagsError()
 
         if (instructionName in commonInstructions):
             if (instructionName in ["and","or","not"]): # Had to create a special way to execute and, or, not operations as they are keywords in python
-                eval(f"self.{instructionName}Instruction()");
+                eval(f"self.{instructionName}Instruction()")
             else:
-                eval(f"self.{instructionName}()"); # Neat way of executing methods based on the variable name. Alternative would have been several lines.
+                eval(f"self.{instructionName}()") # Neat way of executing methods based on the variable name. Alternative would have been several lines.
 
         else: # This is a label instruction
             if (not (self.instruction[0][:-1].isalnum())):
@@ -93,20 +93,20 @@ class Instruction:
             if (self.instruction[0][:-1] in keywords):
                 self.labelNameError()
             
-            self.isLabel = 1;
+            self.isLabel = 1
             self.labelName = self.instruction[0][:-1]
-            instructionName = self.instruction[1];
-            self.instruction = self.instruction[1::]; # Makes the instruction equivalent to the instruction on right of the label
-            self.instructionLength = len(self.instruction);
+            instructionName = self.instruction[1]
+            self.instruction = self.instruction[1::] # Makes the instruction equivalent to the instruction on right of the label
+            self.instructionLength = len(self.instruction)
 
             if (':' in self.instruction[0]): # Error if there's a label instruction inside a label
-                print(f"Error: Incorrect syntax after label in line {self.lineNumber}");
-                exit();
+                print(f"Error: Incorrect syntax after label in line {self.lineNumber}")
+                exit()
 
             if (instructionName in ["and","or","not"]): 
-                eval(f"self.{instructionName}Instruction()");
+                eval(f"self.{instructionName}Instruction()")
             else:
-                eval(f"self.{instructionName}()"); 
+                eval(f"self.{instructionName}()") 
 
 
     def resetFlags(self): # This function resets all the flags to zero.
@@ -119,78 +119,78 @@ class Instruction:
     # All Instruction Methods start here ------
     def add(self):
         if (self.instructionLength != 4):
-            self.syntaxError();
+            self.syntaxError()
 
         try:
-            reg1 = registers[self.instruction[1].lower()];
-            reg2 = registers[self.instruction[2].lower()];
-            reg3 = registers[self.instruction[3].lower()];
-            reg3[1] = reg1[1] + reg2[1]; # Actually add the registers's values and dump in reg3's value
+            reg1 = registers[self.instruction[1].lower()]
+            reg2 = registers[self.instruction[2].lower()]
+            reg3 = registers[self.instruction[3].lower()]
+            reg3[1] = reg1[1] + reg2[1] # Actually add the registers's values and dump in reg3's value
             
             if (reg3[1] > 255): # Case of overflow
                 self.resetFlags()
                 flags['v'] = 1
-                reg3[1] = reg3[1] % (2**16);
+                reg3[1] = reg3[1] % (2**16)
 
             else:
                 self.resetFlags()
 
-            self.validInstruction = True;
-            self.instructionType = 'A';
+            self.validInstruction = True
+            self.instructionType = 'A'
 
         except KeyError: # This error is thrown when one of the register names is invalid
-            self.typoError();  
+            self.typoError()  
     
 
     def sub(self):
         if (self.instructionLength != 4):
-            self.syntaxError();
+            self.syntaxError()
 
         try:
-            reg1 = registers[self.instruction[1].lower()];
-            reg2 = registers[self.instruction[2].lower()];
-            reg3 = registers[self.instruction[3].lower()];
+            reg1 = registers[self.instruction[1].lower()]
+            reg2 = registers[self.instruction[2].lower()]
+            reg3 = registers[self.instruction[3].lower()]
 
             if (reg2[1] > reg1[1]):
-                reg3[1] = 0;
+                reg3[1] = 0
                 self.resetFlags()
                 flags['v'] = 1
             else:
-                reg3[1] = reg1[1] - reg2[1]; # Actually subtract the registers's values and dump in reg3's value
+                reg3[1] = reg1[1] - reg2[1] # Actually subtract the registers's values and dump in reg3's value
                 self.resetFlags()
 
-            self.validInstruction = True;
-            self.instructionType = 'A';
+            self.validInstruction = True
+            self.instructionType = 'A'
 
         except KeyError: # This error is thrown when one of the register names is invalid
-            self.typoError();
+            self.typoError()
 
 
     def mov(self):
         if (self.instructionLength != 3):
-            self.syntaxError();
+            self.syntaxError()
 
         try:
-            reg1 = registers[self.instruction[1].lower()];
+            reg1 = registers[self.instruction[1].lower()]
 
             if (self.instruction[2].startswith('$')): # HANDLES MOV IMMEDIATE
-                immValue = int(self.instruction[2].replace('$',''));
+                immValue = int(self.instruction[2].replace('$',''))
                 if (immValue > 255):
                     self.immError()
             
                 reg1[1] = immValue
                 self.resetFlags()
-                self.instruction[0] = "movimm";
-                self.validInstruction = True;
-                self.instructionType = 'B';
+                self.instruction[0] = "movimm"
+                self.validInstruction = True
+                self.instructionType = 'B'
 
             else: # HANDLES MOV REGISTER
-                reg2 = registers[self.instruction[2].lower()];
-                reg2[1] = reg1[1];
+                reg2 = registers[self.instruction[2].lower()]
+                reg2[1] = reg1[1]
 
                 self.resetFlags()
-                self.validInstruction = True;
-                self.instructionType = 'C';
+                self.validInstruction = True
+                self.instructionType = 'C'
 
         except KeyError:
             if (self.instruction[1].lower() == "flags"):
@@ -200,59 +200,59 @@ class Instruction:
                     flags['g'] = convertDecimalToBinary(registers[self.instruction[2].lower()][1])[6]
                     flags['e'] = convertDecimalToBinary(registers[self.instruction[2].lower()][1])[7]
 
-                    self.validInstruction = True;
-                    self.instructionType = 'Special case of C';
+                    self.validInstruction = True
+                    self.instructionType = 'Special case of C'
                 else:    
-                    self.typoError();
+                    self.typoError()
             else:
-                self.typoError();
+                self.typoError()
             
 
     def mul(self):
         if (self.instructionLength != 4):
-            self.syntaxError();
+            self.syntaxError()
 
         try:
-            reg1 = registers[self.instruction[1].lower()];
-            reg2 = registers[self.instruction[2].lower()];
-            reg3 = registers[self.instruction[3].lower()];
+            reg1 = registers[self.instruction[1].lower()]
+            reg2 = registers[self.instruction[2].lower()]
+            reg3 = registers[self.instruction[3].lower()]
 
-            reg3[1] = reg1[1] * reg2[1];
+            reg3[1] = reg1[1] * reg2[1]
             if (reg3[1] > 255):
                 self.resetFlags()
                 flags['v'] = 1
-                reg3[1] = reg3[1] % (2**16);
+                reg3[1] = reg3[1] % (2**16)
             else:
                 self.resetFlags()
 
-            self.validInstruction = True;
-            self.instructionType = 'A';
+            self.validInstruction = True
+            self.instructionType = 'A'
 
         except KeyError: # This error is thrown when one of the register names is invalid
-            self.typoError();
+            self.typoError()
 
 
     def div(self):
         if (self.instructionLength != 3):
-            self.syntaxError();
+            self.syntaxError()
         
         try:
-            reg3 = registers[self.instruction[1].lower()];
-            reg4 = registers[self.instruction[2].lower()];
+            reg3 = registers[self.instruction[1].lower()]
+            reg4 = registers[self.instruction[2].lower()]
 
             if (reg4[1] == 0): # Zero division error
-                print(f'ZeroDivisionError on line {self.lineNumber}: You cannot divide by 0');
-                exit();
+                print(f'ZeroDivisionError on line {self.lineNumber}: You cannot divide by 0')
+                exit()
 
-            registers['r0'][1] = int(reg3[1] / reg4[1]); # quotient
-            registers['r1'][1] = reg3[1] % reg4[1]; # remainder
+            registers['r0'][1] = int(reg3[1] / reg4[1]) # quotient
+            registers['r1'][1] = reg3[1] % reg4[1] # remainder
 
             self.resetFlags()
-            self.validInstruction = True;
-            self.instructionType = 'C';
+            self.validInstruction = True
+            self.instructionType = 'C'
 
         except KeyError:
-            self.typoError();
+            self.typoError()
 
 
     def ld(self):
@@ -266,8 +266,8 @@ class Instruction:
                 self.varNotDeclaredError()
 
             self.resetFlags()
-            self.validInstruction = True;
-            self.instructionType = 'D';
+            self.validInstruction = True
+            self.instructionType = 'D'
 
         except KeyError:
             self.typoError()
@@ -284,8 +284,8 @@ class Instruction:
                 self.varNotDeclaredError()
 
             self.resetFlags()
-            self.validInstruction = True;
-            self.instructionType = 'D';
+            self.validInstruction = True
+            self.instructionType = 'D'
 
         except KeyError:
             self.typoError()
@@ -293,140 +293,140 @@ class Instruction:
 
     def rs(self):
         if (self.instructionLength != 3):
-            self.syntaxError();
+            self.syntaxError()
         
         try:
-            reg1 = registers[self.instruction[1].lower()];
-            immValue = int(self.instruction[2].replace('$',''));
+            reg1 = registers[self.instruction[1].lower()]
+            immValue = int(self.instruction[2].replace('$',''))
             if (immValue > 255):
                 self.immError()
 
-            newValue = reg1[1] >> immValue;
-            reg1[1] = newValue;
+            newValue = reg1[1] >> immValue
+            reg1[1] = newValue
 
-            self.validInstruction = True;
-            self.instructionType = 'B';
+            self.validInstruction = True
+            self.instructionType = 'B'
             self.resetFlags()
 
         except KeyError:
-            self.typoError();
+            self.typoError()
 
 
     def ls(self):
         if (self.instructionLength != 3):
-            self.syntaxError();
+            self.syntaxError()
         
         try:
-            reg1 = registers[self.instruction[1].lower()];
-            immValue = int(self.instruction[2].replace('$',''));
+            reg1 = registers[self.instruction[1].lower()]
+            immValue = int(self.instruction[2].replace('$',''))
             if (immValue > 255):
                 self.immError()
 
-            newValue = reg1[1] << immValue;
-            reg1[1] = newValue;
+            newValue = reg1[1] << immValue
+            reg1[1] = newValue
 
             self.resetFlags()
-            self.validInstruction = True;
-            self.instructionType = 'B';
+            self.validInstruction = True
+            self.instructionType = 'B'
 
         except KeyError:
-            self.typoError();
+            self.typoError()
 
 
     def xor(self):
         if (self.instructionLength != 4):
-            self.syntaxError();
+            self.syntaxError()
 
         try:
-            reg1 = registers[self.instruction[1].lower()];
-            reg2 = registers[self.instruction[2].lower()];
-            reg3 = registers[self.instruction[3].lower()];
-            reg3[1] = reg1[1] ^ reg2[1];
+            reg1 = registers[self.instruction[1].lower()]
+            reg2 = registers[self.instruction[2].lower()]
+            reg3 = registers[self.instruction[3].lower()]
+            reg3[1] = reg1[1] ^ reg2[1]
 
             self.resetFlags()
-            self.validInstruction = True;
-            self.instructionType = 'A';
+            self.validInstruction = True
+            self.instructionType = 'A'
         
         except KeyError:
-            self.typoError();
+            self.typoError()
 
 
     # Could not name this method "or" as it's already a keyword in python. Sad. (Same for "and")
     def orInstruction(self):
         if (self.instructionLength != 4):
-            self.syntaxError();
+            self.syntaxError()
 
         try:
-            reg1 = registers[self.instruction[1].lower()];
-            reg2 = registers[self.instruction[2].lower()];
-            reg3 = registers[self.instruction[3].lower()];
-            reg3[1] = reg1[1] | reg2[1];
+            reg1 = registers[self.instruction[1].lower()]
+            reg2 = registers[self.instruction[2].lower()]
+            reg3 = registers[self.instruction[3].lower()]
+            reg3[1] = reg1[1] | reg2[1]
             
             self.resetFlags()
-            self.validInstruction = True;
-            self.instructionType = 'A';
+            self.validInstruction = True
+            self.instructionType = 'A'
         
         except KeyError:
-            self.typoError();
+            self.typoError()
 
 
     def andInstruction(self):
         if (self.instructionLength != 4):
-            self.syntaxError();
+            self.syntaxError()
 
         try:
-            reg1 = registers[self.instruction[1].lower()];
-            reg2 = registers[self.instruction[2].lower()];
-            reg3 = registers[self.instruction[3].lower()];
-            reg3[1] = reg1[1] & reg2[1];
+            reg1 = registers[self.instruction[1].lower()]
+            reg2 = registers[self.instruction[2].lower()]
+            reg3 = registers[self.instruction[3].lower()]
+            reg3[1] = reg1[1] & reg2[1]
 
             self.resetFlags()
-            self.validInstruction = True;
-            self.instructionType = 'A';
+            self.validInstruction = True
+            self.instructionType = 'A'
         
         except KeyError:
-            self.typoError();
+            self.typoError()
 
 
     # Stands for invert (not) instruction
     def notInstruction(self):
         if (self.instructionLength != 3):
-            self.syntaxError();
+            self.syntaxError()
         
         try:
-            reg1 = registers[self.instruction[1].lower()];
-            reg2 = registers[self.instruction[2].lower()];
-            reg1[1] = ~reg2[1];
+            reg1 = registers[self.instruction[1].lower()]
+            reg2 = registers[self.instruction[2].lower()]
+            reg1[1] = ~reg2[1]
 
             self.resetFlags()
-            self.validInstruction = True;
-            self.instructionType = "C";
+            self.validInstruction = True
+            self.instructionType = "C"
             
         except KeyError:
-            self.typoError();
+            self.typoError()
 
     
     def cmp(self):
         if (self.instructionLength != 3):
-            self.syntaxError();
+            self.syntaxError()
 
         try:
-            reg1 = registers[self.instruction[1].lower()];
-            reg2 = registers[self.instruction[2].lower()];
-            self.resetFlags(); # Resets the FLAGS 
+            reg1 = registers[self.instruction[1].lower()]
+            reg2 = registers[self.instruction[2].lower()]
+            self.resetFlags() # Resets the FLAGS 
 
             if (reg1[1] == reg2[1]):
-                flags['e'] = 1;
+                flags['e'] = 1
             elif (reg1[1] > reg2[1]):
-                flags['g'] = 1;
+                flags['g'] = 1
             elif (reg1[1] < reg2[1]):
-                flags['l'] = 1;
+                flags['l'] = 1
 
-            self.validInstruction = True;
-            self.instructionType = "C";
+            self.validInstruction = True
+            self.instructionType = "C"
 
         except KeyError:
-            self.typoError();
+            self.typoError()
 
 
     def jmp(self):
@@ -442,8 +442,8 @@ class Instruction:
                 self.labelNotDeclaredError()
         
         self.resetFlags()
-        self.validInstruction = True;
-        self.instructionType = "E";
+        self.validInstruction = True
+        self.instructionType = "E"
 
 
     def jlt(self):
@@ -459,8 +459,8 @@ class Instruction:
                 self.labelNotDeclaredError()
 
         self.resetFlags()
-        self.validInstruction = True;
-        self.instructionType = "E";
+        self.validInstruction = True
+        self.instructionType = "E"
 
 
     def jgt(self):
@@ -476,8 +476,8 @@ class Instruction:
                 self.labelNotDeclaredError()
         
         self.resetFlags()
-        self.validInstruction = True;
-        self.instructionType = "E";
+        self.validInstruction = True
+        self.instructionType = "E"
 
 
     def je(self):
@@ -492,8 +492,8 @@ class Instruction:
                 self.labelNotDeclaredError()
         
         self.resetFlags()
-        self.validInstruction = True;
-        self.instructionType = "E";
+        self.validInstruction = True
+        self.instructionType = "E"
 
 
     def var(self):                          
@@ -511,26 +511,26 @@ class Instruction:
     
     def hlt(self):
         if (self.instructionLength != 1):
-            self.syntaxError();
+            self.syntaxError()
         if (rawInstructionsList[-1] != "hlt"): # Check if hlt is not used as the last instruction (which is illegal)
-            self.hltError();
+            self.hltError()
 
-        self.validInstruction = True;
-        self.instructionType = 'F';
+        self.validInstruction = True
+        self.instructionType = 'F'
 
     # All Error Handling methods
 
     def syntaxError(self):
-        print(f"Syntax error on line {self.lineNumber}");
-        exit();
+        print(f"Syntax error on line {self.lineNumber}")
+        exit()
 
     def hltError(self):
-        print(f"hlt not used as the last instruction on line {lineCount}");
-        exit();
+        print(f"hlt not used as the last instruction on line {lineCount}")
+        exit()
 
     def typoError(self):
-        print(f'Typo in register name on line {self.lineNumber}');
-        exit();
+        print(f'Typo in register name on line {self.lineNumber}')
+        exit()
 
     def varError(self):
         print(f"Error on line {self.lineNumber}: Variables not declared at the beginning")
@@ -561,83 +561,83 @@ class Instruction:
         exit()
 
     def illegalUseOfFlagsError(self):
-        print(f"Illegal use of FLAGS register on line {self.lineNumber}");
-        exit();
+        print(f"Illegal use of FLAGS register on line {self.lineNumber}")
+        exit()
 
     # Solely for debugging purposes
     # This method is triggered when print(instructionObject) is called
     def __str__(self):
-        return f'Instruction: {" ".join(self.instruction)} | Line: {self.lineNumber}';
+        return f'Instruction: {" ".join(self.instruction)} | Line: {self.lineNumber}'
 
 
 # This function converts (i.e encodes) the instructions into machine code (which is a 16-bit binary)
 def encode(instructionObject):
-    instructionType = instructionObject.instructionType;
-    binaryOutput = None;
+    instructionType = instructionObject.instructionType
+    binaryOutput = None
 
     if (instructionType == 'A'): # 3 Registers type
-        opcode = opcodes[instructionObject.instruction[0]];
-        reg1 = registers[instructionObject.instruction[1].lower()];
-        reg2 = registers[instructionObject.instruction[2].lower()];
-        reg3 = registers[instructionObject.instruction[3].lower()];
+        opcode = opcodes[instructionObject.instruction[0]]
+        reg1 = registers[instructionObject.instruction[1].lower()]
+        reg2 = registers[instructionObject.instruction[2].lower()]
+        reg3 = registers[instructionObject.instruction[3].lower()]
 
-        binaryOutput = f"{opcode}00{reg1[0]}{reg2[0]}{reg3[0]}"; # The zeroes in this binary output are unused/filler bits
+        binaryOutput = f"{opcode}00{reg1[0]}{reg2[0]}{reg3[0]}" # The zeroes in this binary output are unused/filler bits
 
     elif (instructionType == 'B'): # Register and Immediate type
-        opcode = opcodes[instructionObject.instruction[0]];
-        reg1 = registers[instructionObject.instruction[1].lower()];
-        immValue = int(instructionObject.instruction[2].replace('$',''));
-        immValueInBinary = convertDecimalToBinary(immValue); # Strictly 8-bits
+        opcode = opcodes[instructionObject.instruction[0]]
+        reg1 = registers[instructionObject.instruction[1].lower()]
+        immValue = int(instructionObject.instruction[2].replace('$',''))
+        immValueInBinary = convertDecimalToBinary(immValue) # Strictly 8-bits
 
-        binaryOutput = f"{opcode}{reg1[0]}{immValueInBinary}";
+        binaryOutput = f"{opcode}{reg1[0]}{immValueInBinary}"
 
     elif (instructionType == 'C'): # 2 Registers type
-        opcode = opcodes[instructionObject.instruction[0]];
-        reg1 = registers[instructionObject.instruction[1].lower()];
-        reg2 = registers[instructionObject.instruction[2].lower()];
+        opcode = opcodes[instructionObject.instruction[0]]
+        reg1 = registers[instructionObject.instruction[1].lower()]
+        reg2 = registers[instructionObject.instruction[2].lower()]
 
-        binaryOutput = f"{opcode}00000{reg1[0]}{reg2[0]}";
+        binaryOutput = f"{opcode}00000{reg1[0]}{reg2[0]}"
     
     elif (instructionType == 'Special case of C'): # mov Flags Ri
-        opcode = opcodes[instructionObject.instruction[0]];
+        opcode = opcodes[instructionObject.instruction[0]]
         reg1 = flagsDictionary[instructionObject.instruction[1].lower()]
-        reg2 = registers[instructionObject.instruction[2].lower()];
+        reg2 = registers[instructionObject.instruction[2].lower()]
 
-        binaryOutput = f"{opcode}00000{reg1[0]}{reg2[0]}";
+        binaryOutput = f"{opcode}00000{reg1[0]}{reg2[0]}"
 
     elif (instructionType == 'D'): # Register and memoryAddress type
-        opcode = opcodes[instructionObject.instruction[0]];
-        reg1 = registers[instructionObject.instruction[1].lower()];
-        memAddr = convertDecimalToBinary(dictVariables[instructionObject.instruction[2]]);
+        opcode = opcodes[instructionObject.instruction[0]]
+        reg1 = registers[instructionObject.instruction[1].lower()]
+        memAddr = convertDecimalToBinary(dictVariables[instructionObject.instruction[2]])
 
-        binaryOutput = f"{opcode}{reg1[0]}{memAddr}";
+        binaryOutput = f"{opcode}{reg1[0]}{memAddr}"
 
     elif (instructionType == 'E'): # Only memoryAddress type
-        opcode = opcodes[instructionObject.instruction[0]];
-        labelName = instructionObject.instruction[1];
-        memAddr = convertDecimalToBinary(dictLabels[labelName]);
+        opcode = opcodes[instructionObject.instruction[0]]
+        labelName = instructionObject.instruction[1]
+        memAddr = convertDecimalToBinary(dictLabels[labelName])
 
-        binaryOutput = f"{opcode}000{memAddr}";
+        binaryOutput = f"{opcode}000{memAddr}"
 
     elif (instructionType == 'F'): # Only for hlt instruction
-        opcode = opcodes[instructionObject.instruction[0]];
+        opcode = opcodes[instructionObject.instruction[0]]
 
-        binaryOutput = f"{opcode}00000000000";
+        binaryOutput = f"{opcode}00000000000"
 
     elif (instructionType == 'V'): # For var instruction
-        return;
+        return
 
-    outputList.append(binaryOutput);
+    outputList.append(binaryOutput)
 
 
 # HELPER FUNCTIONS -------------------
 # This function converts decimal numbers (with constraints) to 8-bit binary numbers
 def convertDecimalToBinary(decimal):
     # Maximum value of decimal supported is 255. For dec=256, the binary result overflows to more than 8 bits
-    binary = bin(decimal).replace('0b','');
-    eightBitBinary = "0"*(8-len(binary)) + binary; 
+    binary = bin(decimal).replace('0b','')
+    eightBitBinary = "0"*(8-len(binary)) + binary 
 
-    return eightBitBinary;
+    return eightBitBinary
 
 # counting variables declared.
 def countVarInstructions(instruction, count):       # instruction is a string containing one line of instruction.
@@ -649,38 +649,38 @@ def countVarInstructions(instruction, count):       # instruction is a string co
 def main():
     while 1:
         try:
-            global lineCount;
-            global currentVarCount;
-            inputLine = input().strip();
-            lineCount += 1;
+            global lineCount
+            global currentVarCount
+            inputLine = input().strip()
+            lineCount += 1
             # Don't add the instruction to the instructions list when the instruction is empty or a blank line
             if (len(inputLine) == 0):
-                continue;
+                continue
 
             countVarInstructions(inputLine, currentVarCount)    # counting the number of variables declared.
-            currentInstruction = Instruction(inputLine,lineCount); # Create an Instruction object
-            instructionsList.append(currentInstruction);
-            rawInstructionsList.append(inputLine);
+            currentInstruction = Instruction(inputLine,lineCount) # Create an Instruction object
+            instructionsList.append(currentInstruction)
+            rawInstructionsList.append(inputLine)
 
         except EOFError:
-            break;
+            break
 
 
 # Function which checks the instructions and tries to catch errors. If instruction is valid, it calls encode() to generate machien code (i.e 16-bit binaries)
 def generateBinaries():
     if ('hlt' not in rawInstructionsList): # Check if hlt is missing
-        print(f"Error: Missing hlt instruction at line {lineCount}");
-        exit();
+        print(f"Error: Missing hlt instruction at line {lineCount}")
+        exit()
     if (rawInstructionsList.count('hlt') > 1):
-        print(f"Error: Not allowed to have more than 1 hlt instruction");
-        exit();
+        print(f"Error: Not allowed to have more than 1 hlt instruction")
+        exit()
     if (len(instructionsList) > 256):
-        print(f"Error: Exceeded the maximum amount (256) of instructions allowed");
-        exit();
+        print(f"Error: Exceeded the maximum amount (256) of instructions allowed")
+        exit()
 
     instructionNumber = 0
     for instructionObject in instructionsList:
-        if (instructionObject.instruction[0].lower() != 'var'):
+        if (instructionObject.instruction[0]!= 'var'):
             global allVarDeclared
             allVarDeclared = 1
         else:
@@ -688,7 +688,7 @@ def generateBinaries():
                 instructionObject.varError()
 
         instructionObject.checkInstructionName() # Checks the validity of the instruction's first word aka the instruction name
-        instructionObject.executeInstruction(); # Executes the instruction and checks the total validity of the whole instruction
+        instructionObject.executeInstruction() # Executes the instruction and checks the total validity of the whole instruction
 
         if (instructionObject.isVar):
             global dictVariables
@@ -697,13 +697,13 @@ def generateBinaries():
             global dictLabels
             dictLabels[instructionObject.labelName] = instructionNumber - currentVarCount   # Adds Label to the dictionary of labels
         if (instructionObject.validInstruction):
-            encode(instructionObject);
+            encode(instructionObject)
 
 # Function which generates the stored input. Only runs if the whole ASM code is error-free 
 def output():
     for outputLine in outputList:
-        print(outputLine);
+        print(outputLine)
 
-main(); # Calling the main program function which will accept the input
-generateBinaries(); # Generating the binaries (if possible) and getting them ready for the STDOUT
-output(); # Calling the program which will output the 16-bit binaries line by line
+main() # Calling the main program function which will accept the input
+generateBinaries() # Generating the binaries (if possible) and getting them ready for the STDOUT
+output() # Calling the program which will output the 16-bit binaries line by line
