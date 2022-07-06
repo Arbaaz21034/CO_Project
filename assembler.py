@@ -69,8 +69,12 @@ class Instruction:
         instructionName = self.instruction[0];
         commonInstructions = ['var','add','sub','mov','ld','st','mul','div','rs','ls','xor','or',
         'and','not','cmp','jmp','jlt','jgt','je','hlt']; # list does not include labels as labels have custom names
+        toLowerCase = lambda x : x.lower();
 
-        if ("FLAGS" in self.instruction and instructionName != "mov"):
+
+        instructionsListLower = map(toLowerCase,self.instruction);
+
+        if ("flags" in instructionsListLower and instructionName != "mov"):
             self.illegalUseOfFlagsError();
 
         if (instructionName in commonInstructions):
