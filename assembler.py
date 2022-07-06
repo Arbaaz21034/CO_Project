@@ -127,10 +127,11 @@ class Instruction:
             reg3 = registers[self.instruction[3].lower()];
             reg3[1] = reg1[1] + reg2[1]; # Actually add the registers's values and dump in reg3's value
             
-            if (reg3[1] > 255):
+            if (reg3[1] > 255): # Case of overflow
                 self.resetFlags()
                 flags['v'] = 1
-                reg3[1] = 0
+                reg3[1] = reg3[1] % (2**16);
+
             else:
                 self.resetFlags()
 
@@ -220,7 +221,7 @@ class Instruction:
             if (reg3[1] > 255):
                 self.resetFlags()
                 flags['v'] = 1
-                reg3[1] = 0
+                reg3[1] = reg3[1] % (2**16);
             else:
                 self.resetFlags()
 
