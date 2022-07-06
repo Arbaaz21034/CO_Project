@@ -12,6 +12,9 @@ Project Authors:
 # Declaring all the global variables here -------------------
 
 
+from cProfile import label
+
+
 opcodes = {
     'add' : '10000', 'sub' : '10001', 'mov' : '10011', 'movimm' : '10010',
     'ld'  : '10100', 'st'  : '10101', 'mul' : '10110', 'div' : '10111',
@@ -649,14 +652,16 @@ def encode(instructionObject):
     elif (instructionType == 'D'): # Register and memoryAddress type
         opcode = opcodes[instructionObject.instruction[0]];
         reg1 = registers[instructionObject.instruction[1].lower()];
-        memAddr = dictVariables[instructionObject.instruction[2]]
+
+        memAddr = convertDecimalToBinary(dictVariables[instructionObject.instruction[2]]);
 
         binaryOutput = f"{opcode}{reg1[0]}{memAddr}";
 
 
     elif (instructionType == 'E'): # Only memoryAddress type
         opcode = opcodes[instructionObject.instruction[0]];
-        memAddr = dictLabels[instructionObject.labelName]
+        labelName = instructionObject.instruction[1];
+        memAddr = convertDecimalToBinary(dictLabels[labelName]);
 
         binaryOutput = f"{opcode}000{memAddr}";
 
