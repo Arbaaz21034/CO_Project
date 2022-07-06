@@ -42,6 +42,8 @@ instructionsList = [] # List contains all Instruction Objects derived from STDIN
 rawInstructionsList = []; # List contains all instrucions in raw text form derived from STDIN
 outputList = []  # List contains everything that needs to be outputted to STDOUT
 lineCount = 0; # Keep a track of the instruction's line number (Needed for ErrorGen)
+# This is a list of keywords for checking label name and variable name.
+keywords = ['r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'flags', 'and', 'or', 'not', 'add', 'sub', 'mov', 'ld', 'st', 'mul', 'div', 'rs', 'ls', 'xor', 'cmp', 'jmp', 'jlt', 'jgt', 'je', 'hlt']
 
 # Actual Implementation starts here -------------------
 
@@ -57,6 +59,7 @@ class Instruction:
         self.instructionType = None;
         self.isLabel = 0
         self.isVar = 0
+        self.labelName = 0
 
     # This method checks the validity of the instruction name (i.e the first word of the instruction)
     def checkInstructionName(self):
@@ -89,8 +92,11 @@ class Instruction:
                 self.labelNameError()
             if (self.instruction[0][:-1] in dictVariables):
                 self.misuseOfVariableAsLabel()
-
+            if (self.instruction[0][:-1] in keywords):
+                self.labelNameError()
+            
             self.isLabel = 1;
+            self.labelName = self.instruction[0][:-1]
             instructionName = self.instruction[1];
             self.instruction = self.instruction[1::]; # Makes the instruction equivalent to the instruction on right of the label
             self.instructionLength = len(self.instruction);
@@ -453,88 +459,71 @@ class Instruction:
             self.typoError();
 
     def jmp(self):
-        if (self.instructionLength != 3):
+        if (self.instructionLength != 2):
             self.syntaxError()
-        try:
-            reg1 = registers[self.instruction[1].lower()]
-            memAddr = self.instruction[2]
-            global dictLabels
-            if (memAddr not in dictLabels):
-                if (memAddr in dictVariables):
-                    self.misuseOfVariableAsLabel()
-                else:
-                    self.labelNotDeclaredError()
-            
-            self.resetFlags()
-            self.validInstruction = True;
-            self.instructionType = "E";
 
-        except KeyError:
-            self.typoError()
-
+        memAddr = self.instruction[1]
+        global dictLabels
+        if (memAddr not in dictLabels):
+            if (memAddr in dictVariables):
+                self.misuseOfVariableAsLabel()
+            else:
+                self.labelNotDeclaredError()
+        
+        self.resetFlags()
+        self.validInstruction = True;
+        self.instructionType = "E";
 
 
     def jlt(self):
-        if (self.instructionLength != 3):
+        if (self.instructionLength != 2):
             self.syntaxError()
-        try:
-            reg1 = registers[self.instruction[1].lower()]
-            memAddr = self.instruction[2]
-            global dictLabels
-            if (memAddr not in dictLabels):
-                if (memAddr in dictVariables):
-                    self.misuseOfVariableAsLabel()
-                else:
-                    self.labelNotDeclaredError()
 
-            self.resetFlags()
-            self.validInstruction = True;
-            self.instructionType = "E";
+        memAddr = self.instruction[1]
+        global dictLabels
+        if (memAddr not in dictLabels):
+            if (memAddr in dictVariables):
+                self.misuseOfVariableAsLabel()
+            else:
+                self.labelNotDeclaredError()
 
-        except KeyError:
-            self.typoError()
+        self.resetFlags()
+        self.validInstruction = True;
+        self.instructionType = "E";
 
 
     def jgt(self):
-        if (self.instructionLength != 3):
+        if (self.instructionLength != 2):
             self.syntaxError()
-        try:
-            reg1 = registers[self.instruction[1].lower()]
-            memAddr = self.instruction[2]
-            global dictLabels
-            if (memAddr not in dictLabels):
-                if (memAddr in dictVariables):
-                    self.misuseOfVariableAsLabel()
-                else:
-                    self.labelNotDeclaredError()
-            
-            self.resetFlags()
-            self.validInstruction = True;
-            self.instructionType = "E";
-
-        except KeyError:
-            self.typoError()
+        
+        memAddr = self.instruction[1]
+        global dictLabels
+        if (memAddr not in dictLabels):
+            if (memAddr in dictVariables):
+                self.misuseOfVariableAsLabel()
+            else:
+                self.labelNotDeclaredError()
+        
+        self.resetFlags()
+        self.validInstruction = True;
+        self.instructionType = "E";
 
 
     def je(self):
-        if (self.instructionLength != 3):
+        if (self.instructionLength != 2):
             self.syntaxError()
-        try:
-            reg1 = registers[self.instruction[1].lower()]
-            memAddr = self.instruction[2]
-            global dictLabels
-            if (memAddr not in dictLabels):
-                if (memAddr in dictVariables):
-                    self.misuseOfVariableAsLabel()
-                else:
-                    self.labelNotDeclaredError()
-            
-            self.resetFlags()
-            self.validInstruction = True;
-            self.instructionType = "E";
+        memAddr = self.instruction[1]
+        global dictLabels
+        if (memAddr not in dictLabels):
+            if (memAddr in dictVariables):
+                self.misuseOfVariableAsLabel()
+            else:
+                self.labelNotDeclaredError()
+        
+        self.resetFlags()
+        self.validInstruction = True;
+        self.instructionType = "E";
 
-        except KeyError:
-            self.typoError()
 
     def var(self):                          
         if (self.instructionLength != 2):
@@ -544,6 +533,9 @@ class Instruction:
             self.varNameError()
         
         if (self.instruction[1] in dictVariables):
+            self.varNameError()
+        
+        if (self.instruction[1] in keywords):
             self.varNameError()
         
         self.validInstruction = True
@@ -664,7 +656,7 @@ def encode(instructionObject):
 
     elif (instructionType == 'E'): # Only memoryAddress type
         opcode = opcodes[instructionObject.instruction[0]];
-        memAddr = dictLabels[instructionObject.instruction[2]]
+        memAddr = dictLabels[instructionObject.labelName]
 
         binaryOutput = f"{opcode}000{memAddr}";
 
@@ -761,8 +753,7 @@ def generateBinaries():
         
         if (instructionObject.isLabel):
             global dictLabels
-            dictLabels[instructionObject.instruction[0][:-1]] = instructionNumber - currentVarCount   # Adds Label to the dictionary of labels
-
+            dictLabels[instructionObject.labelName] = instructionNumber - currentVarCount   # Adds Label to the dictionary of labels
         if (instructionObject.validInstruction):
             encode(instructionObject);
 
