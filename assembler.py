@@ -6,7 +6,6 @@ Project Authors:
     Arman Rajesh Ganjoo    (2021018)
     Chaitanya Arora        (2021033)
     Arbaaz Choudhari       (2021034)
-
 """
 
 # Declaring all the global variables here -------------------
@@ -93,6 +92,10 @@ class Instruction:
             self.instruction = self.instruction[1::]; # Makes the instruction equivalent to the instruction on right of the label
             self.instructionLength = len(self.instruction);
 
+            if (':' in self.instruction[0]): # Error if there's a label instruction inside a label
+                print(f"Error: Incorrect syntax after label in line {self.lineNumber}");
+                exit();
+
             if (instructionName in ["and","or","not"]): 
                 eval(f"self.{instructionName}Instruction()");
             else:
@@ -156,6 +159,7 @@ class Instruction:
 
 
     def mov(self):
+        print(self.instruction);
         if (self.instructionLength != 3):
             self.syntaxError();
 
@@ -583,7 +587,7 @@ def encode(instructionObject):
 
         binaryOutput = f"{opcode}00000{reg1[0]}{reg2[0]}";
     
-    elif (instructionType == 'Special Case of C'): # mov Flags Ri
+    elif (instructionType == 'Special case of C'): # mov Flags Ri
         opcode = opcodes[instructionObject.instruction[0]];
         reg1 = flagsDictionary[instructionObject.instruction[1].lower()]
         reg2 = registers[instructionObject.instruction[2].lower()];
