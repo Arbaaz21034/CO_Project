@@ -70,6 +70,9 @@ class Instruction:
         commonInstructions = ['var','add','sub','mov','ld','st','mul','div','rs','ls','xor','or',
         'and','not','cmp','jmp','jlt','jgt','je','hlt']; # list does not include labels as labels have custom names
 
+        if ("FLAGS" in self.instruction and instructionName != "mov"):
+            self.illegalUseOfFlagsError();
+
         if (instructionName in commonInstructions):
             if (instructionName in ["and","or","not"]): # Had to create a special way to execute and, or, not operations as they are keywords in python
                 eval(f"self.{instructionName}Instruction()");
@@ -159,7 +162,6 @@ class Instruction:
 
 
     def mov(self):
-        print(self.instruction);
         if (self.instructionLength != 3):
             self.syntaxError();
 
@@ -552,6 +554,10 @@ class Instruction:
     def immError(self):
         print(f"Illegal immediate value on line {self.lineNumber}")
         exit()
+
+    def illegalUseOfFlagsError(self):
+        print(f"Illegal use of FLAGS register on line {self.lineNumber}");
+        exit();
 
     # Solely for debugging purposes
     # This method is triggered when print(instructionObject) is called
