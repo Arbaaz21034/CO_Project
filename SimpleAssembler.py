@@ -30,11 +30,12 @@ outputList = []  # List contains everything that needs to be outputted to STDOUT
 lineCount = 0 # Keep a track of the instruction's line number (Needed for ErrorGen)
 # This is a list of keywords for checking label name and variable name.
 keywords = ['r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'flags', 'and', 'or', 'not', 'add', 'sub', 'mov', 'ld', 'st', 'mul', 'div', 'rs', 'ls', 'xor', 'cmp', 'jmp', 'jlt', 'jgt', 'je', 'hlt']
-currentVarCount = 0
+totalVarCount = 0
 # Storing Labels and Variables
 dictLabels = {}             # This dictionary should contain label names given in Assembly code(key) and Memory address(value)
 dictVariables = {}          # This dictionary should contain label names given in Assembly code(key) and Memory address(value)
 allVarDeclared = 0
+specialHalt = 0
 
 # Actual Implementation starts here -------------------
 
@@ -50,6 +51,8 @@ class Instruction:
         self.isLabel = 0
         self.isVar = 0
         self.labelName = 0
+        self.alreadyDeclaredLabel = 0
+
 
 
     # This method checks the validity of the instruction name (i.e the first word of the instruction)
@@ -84,9 +87,9 @@ class Instruction:
                 eval(f"self.{instructionName}()") # Neat way of executing methods based on the variable name. Alternative would have been several lines.
 
         else: # This is a label instruction
-            if (not (self.instruction[0][:-1].isalnum())):
+            if (self.alreadyDeclaredLabel):
                 self.labelNameError()
-            if (self.instruction[0][:-1] in dictLabels):
+            if (not (self.instruction[0][:-1].isalnum())):
                 self.labelNameError()
             if (self.instruction[0][:-1] in dictVariables):
                 self.misuseOfVariableAsLabel()
@@ -508,11 +511,12 @@ class Instruction:
         self.instructionType = "V"
         self.isVar = 1
 
+
     
     def hlt(self):
         if (self.instructionLength != 1):
             self.syntaxError()
-        if (rawInstructionsList[-1] != "hlt"): # Check if hlt is not used as the last instruction (which is illegal)
+        if (rawInstructionsList[-1] != "hlt" and (rawInstructionsList[-1].split()[-1] != "hlt")): # Check if hlt is not used as the last instruction (which is illegal)
             self.hltError()
 
         self.validInstruction = True
@@ -639,36 +643,48 @@ def convertDecimalToBinary(decimal):
 
     return eightBitBinary
 
-# counting variables declared.
-def countVarInstructions(instruction, count):       # instruction is a string containing one line of instruction.
-    if ((instruction[0]).lower() == 'var'):         # count is the current variable count which gets incremented every time a variable is declared.
-        count+=1
-
 
 # Main program loop which is responsible for handling the input
 def main():
+    instructionNumber = 0
     while 1:
         try:
             global lineCount
-            global currentVarCount
+            global totalVarCount
             inputLine = input().strip()
             lineCount += 1
             # Don't add the instruction to the instructions list when the instruction is empty or a blank line
             if (len(inputLine) == 0):
                 continue
+            if ((inputLine.split()[0]) == 'var'):         # count is the current variable count which gets incremented every time a variable is declared.
+                totalVarCount+=1
 
-            countVarInstructions(inputLine, currentVarCount)    # counting the number of variables declared.
             currentInstruction = Instruction(inputLine,lineCount) # Create an Instruction object
             instructionsList.append(currentInstruction)
             rawInstructionsList.append(inputLine)
 
+            if (currentInstruction.instruction[0] not in ['var','add','sub','mov','ld','st','mul','div','rs','ls','xor','or',
+        'and','not','cmp','jmp','jlt','jgt','je','hlt']):
+                global dictLabels
+                if (currentInstruction.instruction[0][:-1] in dictLabels):
+                    currentInstruction.alreadyDeclaredLabel = 1
+                dictLabels[currentInstruction.instruction[0][:-1]] = instructionNumber - totalVarCount   # Adds Label to the dictionary of labels
+                if (currentInstruction.instruction[1] == "hlt"):
+                    global specialHalt
+                    specialHalt = 1
+            instructionNumber+=1
+
+
         except EOFError:
             break
+        
+        except:
+            continue
 
 
 # Function which checks the instructions and tries to catch errors. If instruction is valid, it calls encode() to generate machien code (i.e 16-bit binaries)
 def generateBinaries():
-    if ('hlt' not in rawInstructionsList): # Check if hlt is missing
+    if ('hlt' not in rawInstructionsList and (not specialHalt)): # Check if hlt is missing
         print(f"Error: Missing hlt instruction at line {lineCount}")
         exit()
     if (rawInstructionsList.count('hlt') > 1):
@@ -689,15 +705,14 @@ def generateBinaries():
 
         instructionObject.checkInstructionName() # Checks the validity of the instruction's first word aka the instruction name
         instructionObject.executeInstruction() # Executes the instruction and checks the total validity of the whole instruction
-
+        global totalVarCount
         if (instructionObject.isVar):
             global dictVariables
-            dictVariables[instructionObject.instruction[1]] = len(instructionsList) + currentVarCount
-        if (instructionObject.isLabel):
-            global dictLabels
-            dictLabels[instructionObject.labelName] = instructionNumber - currentVarCount   # Adds Label to the dictionary of labels
+            dictVariables[instructionObject.instruction[1]] = len(instructionsList) - totalVarCount + instructionNumber
+        
         if (instructionObject.validInstruction):
             encode(instructionObject)
+        instructionNumber+=1
 
 # Function which generates the stored input. Only runs if the whole ASM code is error-free 
 def output():
