@@ -12,7 +12,8 @@ Project Authors:
 
 # Initialising Memory
 memory = ['0'*16]*256
-
+programCounter = 0
+halted = 0
 # Declaring Dictionaries for decoding instructions
 
 opcodes = {
@@ -28,11 +29,37 @@ registers = {
 # Flags Convention: v -> overflow flag, l -> lesser than flag, g -> greater than flag, e -> equal flag
 flags = { 'v':0, 'l':0, 'g':0, 'e':0 }
 
-
-
-rawInstructionsList = [] # List contains all instrucions in raw text form derived from STDIN
-
 instructionsList = [] # List contains all Instruction Objects derived from STDIN
+
+
+# HELPER FUNCTIONS -------------------
+# This function converts decimal numbers (with constraints) to 8-bit binary numbers
+def decimalToBinary16bit(decimal):
+    # Maximum value of decimal supported is 255. For dec=256, the binary result overflows to more than 8 bits
+    binary = bin(decimal).replace('0b','')
+    sixteenBitBinary = "0"*(16-len(binary)) + binary 
+
+    return sixteenBitBinary
+
+def decimalToBinary8bit(decimal):
+    # Maximum value of decimal supported is 255. For dec=256, the binary result overflows to more than 8 bits
+    binary = bin(decimal).replace('0b','')
+    sixteenBitBinary = "0"*(8-len(binary)) + binary 
+
+    return sixteenBitBinary
+
+# This function converts binary numbers to decimal equivalent.
+
+def binaryToDecimal(binary):
+	
+    decimal, i = 0, 0
+    while(binary != 0):
+        dec = binary % 10
+        decimal = decimal + dec * (2**i)
+        binary = binary//10
+        i += 1
+    return decimal
+
 
 # Actual Implementation starts here -------------------
 
@@ -40,7 +67,7 @@ instructionsList = [] # List contains all Instruction Objects derived from STDIN
 class Instruction:
     # Initiate the Instruction object with the assembly instruction derived from stdin
     def __init__(self, asmInstruction, lineNumber):
-        self.instruction = asmInstruction.split() # is a list 
+        self.instruction = asmInstruction
         self.lineNumber = lineNumber
 
 
@@ -80,6 +107,9 @@ class Instruction:
         else:
             self.resetFlags()
 
+        global programCounter
+        programCounter+=1
+
     
 
     def sub(self):
@@ -96,6 +126,9 @@ class Instruction:
             registers[reg3] = registers[reg1] - registers[reg2] # Actually subtract the registers's values and dump in reg3's value
             self.resetFlags()
 
+        global programCounter
+        programCounter+=1
+
 
 
     def movimm(self):
@@ -103,6 +136,9 @@ class Instruction:
         immValue = binaryToDecimal(int(self.instruction[8:]))
         registers[reg1] = immValue
         self.resetFlags()
+
+        global programCounter
+        programCounter+=1
 
     def mov(self):
         reg1 = self.instruction[10:13]
@@ -115,7 +151,9 @@ class Instruction:
         else:
             registers[reg2] = registers[reg1]
             self.resetFlags()
-   
+
+        global programCounter
+        programCounter+=1
          
 
     def mul(self):
@@ -129,6 +167,9 @@ class Instruction:
             reg3[1] = reg3[1] % (2**16)
         else:
             self.resetFlags()
+        
+        global programCounter
+        programCounter+=1
 
     def div(self):
 
@@ -140,13 +181,34 @@ class Instruction:
 
         self.resetFlags()
 
+        global programCounter
+        programCounter+=1
+
 
     def ld(self):
-        pass
+        
+        reg1 = self.instruction[5:8]
+        memAddress = binaryToDecimal(int([self.instruction[8:]]))
+
+        registers[reg1] = binaryToDecimal(int(memory[memAddress]))
+
+        self.resetFlags()
+
+        global programCounter
+        programCounter+=1
 
 
     def st(self):
-        pass
+
+        reg1 = self.instruction[5:8]
+        memAddress = binaryToDecimal(int([self.instruction[8:]]))
+
+        memory[memAddress] = decimalToBinary16bit(registers[reg1])
+
+        self.resetFlags()
+
+        global programCounter
+        programCounter+=1
 
 
 
@@ -184,50 +246,50 @@ class Instruction:
         elif (registers[reg1] < registers[reg2]):
             flags['l'] = 1
 
+    
     def jmp(self):
-        pass
+        memAddress = binaryToDecimal(int([self.instruction[8:]]))
+        self.resetFlags()
+
+        global programCounter
+        programCounter = memAddress
+
   
 
 
     def jlt(self):
-        pass
+        memAddress = binaryToDecimal(int([self.instruction[8:]]))
+        if (flags['l'] == 1):
+            global programCounter
+            programCounter = memAddress
+        self.resetFlags()
 
 
     def jgt(self):
-        pass
+        memAddress = binaryToDecimal(int([self.instruction[8:]]))
+        if (flags['g'] == 1):
+            global programCounter
+            programCounter = memAddress
+        self.resetFlags()
 
 
     def je(self):
-        pass
+        memAddress = binaryToDecimal(int([self.instruction[8:]]))
+        if (flags['e'] == 1):
+            global programCounter
+            programCounter = memAddress
+        self.resetFlags()
 
 
 
     
     def hlt(self):
+        global halted
+        halted = 1
         self.resetFlags()
 
 
 
-# HELPER FUNCTIONS -------------------
-# This function converts decimal numbers (with constraints) to 8-bit binary numbers
-def convertDecimalToBinary(decimal):
-    # Maximum value of decimal supported is 255. For dec=256, the binary result overflows to more than 8 bits
-    binary = bin(decimal).replace('0b','')
-    eightBitBinary = "0"*(8-len(binary)) + binary 
-
-    return eightBitBinary
-
-# This function converts binary numbers to decimal equivalent.
-
-def binaryToDecimal(binary):
-	
-    decimal, i = 0, 0
-    while(binary != 0):
-        dec = binary % 10
-        decimal = decimal + dec * (2**i)
-        binary = binary//10
-        i += 1
-    return decimal
 
 	
 
@@ -237,29 +299,49 @@ def binaryToDecimal(binary):
 def main():
     i = 0
     instructionNumber = 0
-    halted = 0
+    h = 0
     while 1:
         try:
             inputLine = input().strip()
             memory[i] = inputLine
             i+=1
 
-            if (not halted):
+            if (not h):
                 currentInstruction = Instruction(inputLine,instructionNumber) # Create an Instruction object
                 instructionsList.append(currentInstruction)
-                rawInstructionsList.append(inputLine)
-               
-                if (currentInstruction.instruction[0:5] == '01010'):
-                    halted = 1
-                    continue
-        
                 instructionNumber+=1
-                
-
-
+                if (currentInstruction.instruction[0:5] == '01010'):
+                    h = 1
+        
         except EOFError:
             break
 
+def registerDump():
+    for r in registers:
+        reg = decimalToBinary16bit(registers[r])
+        print(reg, end = " ")
+    print("")
+
+def memoryDumb():
+    for i in range(0,256):
+        print(memory[i])
+
+def simExecution():
+    global halted
+    while(not halted):
+        global programCounter
+        pc = decimalToBinary8bit(programCounter)
+        instruction = instructionsList[programCounter]
+        instruction.executeInstruction()
+        print(pc, end = " ")
+        registerDump()
+    
+    memoryDumb()
+
+main()
+simExecution()
+
+        
 
 
 
