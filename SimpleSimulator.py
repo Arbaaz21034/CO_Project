@@ -14,6 +14,7 @@ Project Authors:
 memory = ['0'*16]*256
 programCounter = 0
 halted = 0
+
 # Declaring Dictionaries for decoding instructions
 
 opcodes = {
@@ -259,33 +260,30 @@ class Instruction:
 
     def jlt(self):
         memAddress = binaryToDecimal(int([self.instruction[8:]]))
+        global programCounter
         if (flags['l'] == 1):
-            global programCounter
             programCounter = memAddress
         else: 
-            global programCounter
             programCounter+=1
         self.resetFlags()
 
 
     def jgt(self):
         memAddress = binaryToDecimal(int([self.instruction[8:]]))
+        global programCounter
         if (flags['g'] == 1):
-            global programCounter
             programCounter = memAddress
         else:
-            global programCounter
             programCounter+=1
         self.resetFlags()
 
 
     def je(self):
         memAddress = binaryToDecimal(int([self.instruction[8:]]))
+        global programCounter
         if (flags['e'] == 1):
-            global programCounter
             programCounter = memAddress
         else:
-            global programCounter
             programCounter+=1   
         self.resetFlags()
     
@@ -302,7 +300,10 @@ def main():
     h = 0
     while 1:
         try:
+
             inputLine = input().strip()
+            if (len(inputLine) == 0):
+                continue
             memory[i] = inputLine
             i+=1
 
