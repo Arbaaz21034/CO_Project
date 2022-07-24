@@ -200,6 +200,7 @@ class Instruction:
                 if (self.instruction[2].lower() in registers):
                     reg2 = registers[self.instruction[2].lower()]
                     reg2[1] = (2**0)*flags['e']+(2**1)*flags['g']+(2**2)*flags['l']+(2**3)*flags['v']
+                    self.resetFlags()
                     self.validInstruction = True
                     self.instructionType = 'Special case of C'
                 else:    
