@@ -198,11 +198,8 @@ class Instruction:
         except KeyError:
             if (self.instruction[1].lower() == "flags"):
                 if (self.instruction[2].lower() in registers):
-                    flags['v'] = convertDecimalToBinary(registers[self.instruction[2].lower()][1])[4]
-                    flags['l'] = convertDecimalToBinary(registers[self.instruction[2].lower()][1])[5]
-                    flags['g'] = convertDecimalToBinary(registers[self.instruction[2].lower()][1])[6]
-                    flags['e'] = convertDecimalToBinary(registers[self.instruction[2].lower()][1])[7]
-
+                    reg2 = self.instruction[2].lower()
+                    reg2[1] = (2**0)*flags['e']+(2**1)*flags['g']+(2**2)*flags['l']+(2**3)*flags['v']
                     self.validInstruction = True
                     self.instructionType = 'Special case of C'
                 else:    
