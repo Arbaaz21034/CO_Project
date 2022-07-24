@@ -262,6 +262,9 @@ class Instruction:
         if (flags['l'] == 1):
             global programCounter
             programCounter = memAddress
+        else: 
+            global programCounter
+            programCounter+=1
         self.resetFlags()
 
 
@@ -270,6 +273,9 @@ class Instruction:
         if (flags['g'] == 1):
             global programCounter
             programCounter = memAddress
+        else:
+            global programCounter
+            programCounter+=1
         self.resetFlags()
 
 
@@ -278,21 +284,15 @@ class Instruction:
         if (flags['e'] == 1):
             global programCounter
             programCounter = memAddress
+        else:
+            global programCounter
+            programCounter+=1   
         self.resetFlags()
-
-
-
     
     def hlt(self):
         global halted
         halted = 1
         self.resetFlags()
-
-
-
-
-	
-
 
 
 # Main program loop which is responsible for handling the input
