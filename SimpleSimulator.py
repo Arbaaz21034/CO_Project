@@ -214,24 +214,82 @@ class Instruction:
 
 
     def rs(self):
-        pass
+        reg1 = self.instruction[5:8]
+        immValue = binaryToDecimal(int(self.instruction[8:]))
+        reg1 = binaryToDecimal(int(reg1))
+        reg1 = reg1/(2**immValue)
+        self.resetFlags()
+
+        global programCounter
+        programCounter += 1
+
+        # pass
 
 
     def ls(self):
-        pass
+        reg1 = self.instruction[5:8]
+        immValue = binaryToDecimal(int(self.instruction[8:]))
+        reg1 = binaryToDecimal(int(reg1))
+        reg1 = reg1*(2**immValue)
+        self.resetFlags()
+
+        global programCounter
+        programCounter += 1
 
 
     def xor(self):
-        pass
+
+        reg1 = self.instruction[7:10]
+        reg2 = self.instruction[10:13]
+        reg3 = self.instruction[13:16]
+        for i in range(3):
+            reg3[13 + i] = reg1[7 + i] ^ reg2[10 + i]
+
+        self.resetFlags()
+
+        global programCounter
+        programCounter += 1
+
+
 
     def orInstruction(self):
-        pass
+
+        reg1 = self.instruction[7:10]
+        reg2 = self.instruction[10:13]
+        reg3 = self.instruction[13:16]
+        for i in range(3):
+            reg3[13 + i] = reg1[7 + i] | reg2[10 + i]
+
+        self.resetFlags()
+
+        global programCounter
+        programCounter += 1
 
     def andInstruction(self):
-        pass
+
+        reg1 = self.instruction[7:10]
+        reg2 = self.instruction[10:13]
+        reg3 = self.instruction[13:16]
+        for i in range(3):
+            reg3[13 + i] = reg1[7 + i] & reg2[10 + i]
+
+        self.resetFlags()
+
+        global programCounter
+        programCounter += 1
 
     def notInstruction(self):
-        pass
+
+        reg1 = self.instruction[10:13]
+        reg2 = self.instruction[13:16]
+
+        for i in range(3):
+            reg2[13+i] = ~reg1[10+i]
+
+        self.resetFlags()
+
+        global programCounter
+        programCounter += 1
 
     
     def cmp(self):
@@ -246,6 +304,11 @@ class Instruction:
             flags['g'] = 1
         elif (registers[reg1] < registers[reg2]):
             flags['l'] = 1
+
+        self.resetFlags()
+
+        global programCounter
+        programCounter += 1
 
     
     def jmp(self):
