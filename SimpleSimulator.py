@@ -216,25 +216,30 @@ class Instruction:
     def rs(self):
         reg1 = self.instruction[5:8]
         immValue = binaryToDecimal(int(self.instruction[8:]))
-        reg1 = binaryToDecimal(int(reg1))
-        reg1 = reg1/(2**immValue)
+        binaryReg1 = decimalToBinary16bit(registers[reg1])
+        binaryReg1rs = immValue*'0' + binaryReg1[0:-immValue]
+        registers[reg1] = binaryToDecimal(int(binaryReg1rs))
+
         self.resetFlags()
 
         global programCounter
         programCounter += 1
-
-        # pass
 
 
     def ls(self):
+
         reg1 = self.instruction[5:8]
         immValue = binaryToDecimal(int(self.instruction[8:]))
-        reg1 = binaryToDecimal(int(reg1))
-        reg1 = reg1*(2**immValue)
+        binaryReg1 = decimalToBinary16bit(registers[reg1])
+        binaryReg1ls = binaryReg1[immValue:] + immValue*'0'
+        registers[reg1] = binaryToDecimal(int(binaryReg1ls))
+
         self.resetFlags()
 
         global programCounter
         programCounter += 1
+
+
 
 
     def xor(self):
@@ -301,14 +306,18 @@ class Instruction:
         reg1 = self.instruction[10:13]
         reg2 = self.instruction[13:16]
 
-        for i in range(3):
-            reg2[13+i] = ~reg1[10+i]
+        binaryReg1 = decimalToBinary16bit(registers[reg1])
+        binaryReg2 = ""
+
+        for i in range(0, 16):
+            binaryReg2 += str(~(int(binaryReg1[i])))
+
+        registers[reg2] = binaryToDecimal(int(binaryReg2))
 
         self.resetFlags()
 
         global programCounter
         programCounter += 1
-
     
     def cmp(self):
         
