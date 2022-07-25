@@ -242,8 +242,14 @@ class Instruction:
         reg1 = self.instruction[7:10]
         reg2 = self.instruction[10:13]
         reg3 = self.instruction[13:16]
-        for i in range(3):
-            reg3[13 + i] = reg1[7 + i] ^ reg2[10 + i]
+
+        binaryReg1 = decimalToBinary16bit(registers[reg1])
+        binaryReg2 = decimalToBinary16bit(registers[reg2])
+        binaryReg3 = ""
+        for i in range(0,16):
+            binaryReg3 += str(int(binaryReg1[i]) ^ int(binaryReg2[i]))
+
+        registers[reg3] = binaryToDecimal(int(binaryReg3))   
 
         self.resetFlags()
 
@@ -257,8 +263,14 @@ class Instruction:
         reg1 = self.instruction[7:10]
         reg2 = self.instruction[10:13]
         reg3 = self.instruction[13:16]
-        for i in range(3):
-            reg3[13 + i] = reg1[7 + i] | reg2[10 + i]
+
+        binaryReg1 = decimalToBinary16bit(registers[reg1])
+        binaryReg2 = decimalToBinary16bit(registers[reg2])
+        binaryReg3 = ""
+        for i in range(0,16):
+            binaryReg3 += str(int(binaryReg1[i]) or int(binaryReg2[i]))
+
+        registers[reg3] = binaryToDecimal(int(binaryReg3))   
 
         self.resetFlags()
 
@@ -270,8 +282,14 @@ class Instruction:
         reg1 = self.instruction[7:10]
         reg2 = self.instruction[10:13]
         reg3 = self.instruction[13:16]
-        for i in range(3):
-            reg3[13 + i] = reg1[7 + i] & reg2[10 + i]
+
+        binaryReg1 = decimalToBinary16bit(registers[reg1])
+        binaryReg2 = decimalToBinary16bit(registers[reg2])
+        binaryReg3 = ""
+        for i in range(0,16):
+            binaryReg3 += str(int(binaryReg1[i]) and int(binaryReg2[i]))
+
+        registers[reg3] = binaryToDecimal(int(binaryReg3))   
 
         self.resetFlags()
 
