@@ -189,7 +189,7 @@ class Instruction:
     def ld(self):
         
         reg1 = self.instruction[5:8]
-        memAddress = binaryToDecimal(int([self.instruction[8:]]))
+        memAddress = binaryToDecimal(int(self.instruction[8:]))
 
         registers[reg1] = binaryToDecimal(int(memory[memAddress]))
 
@@ -202,7 +202,7 @@ class Instruction:
     def st(self):
 
         reg1 = self.instruction[5:8]
-        memAddress = binaryToDecimal(int([self.instruction[8:]]))
+        memAddress = binaryToDecimal(int(self.instruction[8:]))
 
         memory[memAddress] = decimalToBinary16bit(registers[reg1])
 
