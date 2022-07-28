@@ -75,7 +75,7 @@ class Instruction:
     def executeInstruction(self):
         instructionName = opcodes[self.instruction[0:5]]
         
-        allInstructions = ['var','add','sub','mov','ld','st','mul','div','rs','ls','xor','or',
+        allInstructions = ['var','add','sub','mov','movimm','ld','st','mul','div','rs','ls','xor','or',
         'and','not','cmp','jmp','jlt','jgt','je','hlt'] # list does not include labels as labels have custom names
 
 
@@ -140,6 +140,7 @@ class Instruction:
 
         global programCounter
         programCounter+=1
+        
 
     def mov(self):
         reg1 = self.instruction[10:13]
@@ -339,7 +340,7 @@ class Instruction:
 
     
     def jmp(self):
-        memAddress = binaryToDecimal(int([self.instruction[8:]]))
+        memAddress = binaryToDecimal(int(self.instruction[8:]))
         self.resetFlags()
 
         global programCounter
@@ -349,7 +350,7 @@ class Instruction:
 
 
     def jlt(self):
-        memAddress = binaryToDecimal(int([self.instruction[8:]]))
+        memAddress = binaryToDecimal(int(self.instruction[8:]))
         global programCounter
         if (flags['l'] == 1):
             programCounter = memAddress
@@ -359,7 +360,7 @@ class Instruction:
 
 
     def jgt(self):
-        memAddress = binaryToDecimal(int([self.instruction[8:]]))
+        memAddress = binaryToDecimal(int(self.instruction[8:]))
         global programCounter
         if (flags['g'] == 1):
             programCounter = memAddress
@@ -369,7 +370,7 @@ class Instruction:
 
 
     def je(self):
-        memAddress = binaryToDecimal(int([self.instruction[8:]]))
+        memAddress = binaryToDecimal(int(self.instruction[8:]))
         global programCounter
         if (flags['e'] == 1):
             programCounter = memAddress
@@ -411,9 +412,9 @@ def registerDump():
     for r in registers:
         reg = decimalToBinary16bit(registers[r])
         print(reg, end = " ")
-    print("")
+    print()
 
-def memoryDumb():
+def memoryDump():
     for i in range(0,256):
         print(memory[i])
 
@@ -427,14 +428,9 @@ def simExecution():
         print(pc, end = " ")
         registerDump()
     
-    memoryDumb()
+    memoryDump()
 
 main()
 simExecution()
 
         
-
-
-
-
-
