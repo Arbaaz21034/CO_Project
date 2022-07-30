@@ -49,6 +49,13 @@ def decimalToBinary8bit(decimal):
 
     return sixteenBitBinary
 
+def decimalToSmallestBinary(decimal):
+    binary = bin(decimal).replace('0b','')
+
+    return binary
+
+
+
 # This function converts binary numbers to decimal equivalent.
 
 def binaryToDecimal(binary):
@@ -90,6 +97,7 @@ class Instruction:
         flags['e'] = 0
         flags['g'] = 0
         flags['l'] = 0
+        registers["111"] = 0
 
 
     # All Instruction Methods start here ------
@@ -307,11 +315,14 @@ class Instruction:
         reg1 = self.instruction[10:13]
         reg2 = self.instruction[13:16]
 
-        binaryReg1 = decimalToBinary16bit(registers[reg1])
+        binaryReg1 = decimalToSmallestBinary(registers[reg1])
         binaryReg2 = ""
 
-        for i in range(0, 16):
-            binaryReg2 += str(~(int(binaryReg1[i])))
+        for bit in binaryReg1:
+            if (bit == "0"):
+                binaryReg2 += "1"
+            elif (bit == "1"):
+                binaryReg2 += "0"
 
         registers[reg2] = binaryToDecimal(int(binaryReg2))
 
@@ -328,14 +339,13 @@ class Instruction:
         self.resetFlags()
         if (registers[reg1] == registers[reg2]):
             flags['e'] = 1
+            registers["111"] = 1
         elif (registers[reg1] > registers[reg2]):
             flags['g'] = 1
+            registers["111"] = 1
         elif (registers[reg1] < registers[reg2]):
             flags['l'] = 1
-
-        self.resetFlags()
-
-
+            registers["111"] = 1
 
         global programCounter
         programCounter += 1
