@@ -90,7 +90,6 @@ class Instruction:
         flags['e'] = 0
         flags['g'] = 0
         flags['l'] = 0
-        registers["111"] = 0
 
 
     # All Instruction Methods start here ------
@@ -329,13 +328,12 @@ class Instruction:
         self.resetFlags()
         if (registers[reg1] == registers[reg2]):
             flags['e'] = 1
-            registers["111"] = 1
         elif (registers[reg1] > registers[reg2]):
             flags['g'] = 1
-            registers["111"] = 1
         elif (registers[reg1] < registers[reg2]):
             flags['l'] = 1
-            registers["111"] = 1
+
+        self.resetFlags()
 
 
 
