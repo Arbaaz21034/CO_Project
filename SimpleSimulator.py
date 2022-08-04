@@ -8,6 +8,19 @@ Project Authors:
     Arbaaz Choudhari       (2021034)
 """
 
+DEBUG_MODE = False; # Keep this OFF when not in development or when pushing to Github
+
+def debug(x):
+    if (DEBUG_MODE):
+        print(f"[DEBUG] {x}");
+
+if (DEBUG_MODE):
+    print("\nDEBUG mode is ON. Remember to turn it OFF before pushing code to Github.");
+
+
+
+
+
 # Here I have tried to keep the same naming as Assembler to make our work easier.
 
 # Initialising Memory
@@ -109,8 +122,10 @@ class Instruction:
         registers[reg3] = registers[reg1] + registers[reg2] 
         
         if (registers[reg3] > 255): # Case of overflow
+            debug("Encountered overflow in add");
             self.resetFlags()
             flags['v'] = 1
+            setFlag('v');
             registers[reg3] = registers[reg3] % (2**16)
 
         else:
@@ -128,9 +143,11 @@ class Instruction:
         reg3 = self.instruction[13:16]
 
         if (registers[reg2] > registers[reg1]):
+            debug("Encountered underflow in sub");
             registers[reg3] = 0
             self.resetFlags()
             flags['v'] = 1
+            setFlag('v');
         else:
             registers[reg3] = registers[reg1] - registers[reg2] # Actually subtract the registers's values and dump in reg3's value
             self.resetFlags()
@@ -173,9 +190,12 @@ class Instruction:
         registers[reg3] = registers[reg1] * registers[reg2]
 
         if (registers[reg3] > 255):
+            debug("Encountered overflow in mul");
             self.resetFlags()
             flags['v'] = 1
+            setFlag('v');
             registers[reg3] = registers[reg3] % (2**16)
+
         else:
             self.resetFlags()
         
@@ -396,6 +416,19 @@ class Instruction:
         halted = 1
         self.resetFlags()
 
+
+
+def setFlag(flagType):
+    if (flagType.lower() == "e"):
+        registers['111'] = 1;
+    elif (flagType.lower() == "g"):
+        registers["111"] = 2;
+    elif (flagType.lower() == "l"):
+        registers["111"] = 4;
+    elif (flagType.lower() == "v"):
+        registers["111"] = 8;
+    else:
+        debug("Weird behavior in setFlag()");
 
 # Main program loop which is responsible for handling the input
 def main():

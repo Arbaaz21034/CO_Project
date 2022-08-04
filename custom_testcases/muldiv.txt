@@ -5,6 +5,9 @@ mov r5 $100
 mov r6 $100
 mul r5 r6 r2
 div r1 r2
+mov r1 $255
+mov r2 $255
+mul r1 r2 r3
 hlt
 
 1001000100000101
