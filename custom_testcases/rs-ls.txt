@@ -1,3 +1,14 @@
 mov r1 $100
 mov r2 $50
 mov r3 $77
+mov r4 $22
+rs r1 $5
+rs r2 $10
+rs r3 $20
+rs r3 $100
+ls r1 $5
+ls r2 $10
+ls r3 $20
+ls r3 $100
+rs r2 $1
+hlt

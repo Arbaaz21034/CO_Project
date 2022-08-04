@@ -8,6 +8,9 @@ Project Authors:
     Arbaaz Choudhari       (2021034)
 """
 
+from this import d
+
+
 DEBUG_MODE = False; # Keep this OFF when not in development or when pushing to Github
 
 def debug(x):
@@ -58,9 +61,9 @@ def decimalToBinary16bit(decimal):
 def decimalToBinary8bit(decimal):
     # Maximum value of decimal supported is 255. For dec=256, the binary result overflows to more than 8 bits
     binary = bin(decimal).replace('0b','')
-    sixteenBitBinary = "0"*(8-len(binary)) + binary 
+    eightBitBinary = "0"*(8-len(binary)) + binary 
 
-    return sixteenBitBinary
+    return eightBitBinary
 
 def decimalToSmallestBinary(decimal):
     binary = bin(decimal).replace('0b','')
