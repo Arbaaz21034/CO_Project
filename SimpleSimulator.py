@@ -171,10 +171,11 @@ class Instruction:
         reg2 = self.instruction[10:13]
         reg3 = self.instruction[13:16]
         registers[reg3] = registers[reg1] * registers[reg2]
-        if (reg3[1] > 255):
+
+        if (registers[reg3] > 255):
             self.resetFlags()
             flags['v'] = 1
-            reg3[1] = reg3[1] % (2**16)
+            registers[reg3] = registers[reg3] % (2**16)
         else:
             self.resetFlags()
         
