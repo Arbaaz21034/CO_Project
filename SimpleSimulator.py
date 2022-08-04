@@ -7,6 +7,7 @@ Project Authors:
     Chaitanya Arora        (2021033)
     Arbaaz Choudhari       (2021034)
 """
+import matplotlib.pyplot as plt
 
 DEBUG_MODE = False; # Keep this OFF when not in development or when pushing to Github
 
@@ -132,6 +133,7 @@ class Instruction:
             self.resetFlags()
 
         global programCounter
+        memoryAccessed.append(programCounter)
         programCounter+=1
 
     
@@ -153,6 +155,7 @@ class Instruction:
             self.resetFlags()
 
         global programCounter
+        memoryAccessed.append(programCounter)
         programCounter+=1
 
 
@@ -164,6 +167,7 @@ class Instruction:
         self.resetFlags()
 
         global programCounter
+        memoryAccessed.append(programCounter)
         programCounter+=1
         
 
@@ -180,6 +184,7 @@ class Instruction:
             self.resetFlags()
 
         global programCounter
+        memoryAccessed.append(programCounter)
         programCounter+=1
          
 
@@ -200,6 +205,7 @@ class Instruction:
             self.resetFlags()
         
         global programCounter
+        memoryAccessed.append(programCounter)
         programCounter+=1
 
     def div(self):
@@ -213,6 +219,7 @@ class Instruction:
         self.resetFlags()
 
         global programCounter
+        memoryAccessed.append(programCounter)
         programCounter+=1
 
 
@@ -226,6 +233,10 @@ class Instruction:
         self.resetFlags()
 
         global programCounter
+        global cycle
+        memoryAccessed.append(programCounter)
+        cycleNumber.append(cycle)
+        memoryAccessed.append(memAddress)
         programCounter+=1
 
 
@@ -239,6 +250,10 @@ class Instruction:
         self.resetFlags()
 
         global programCounter
+        global cycle
+        memoryAccessed.append(programCounter)
+        cycleNumber.append(cycle)
+        memoryAccessed.append(memAddress)
         programCounter+=1
 
 
@@ -253,6 +268,7 @@ class Instruction:
         self.resetFlags()
 
         global programCounter
+        memoryAccessed.append(programCounter)
         programCounter += 1
 
 
@@ -267,6 +283,7 @@ class Instruction:
         self.resetFlags()
 
         global programCounter
+        memoryAccessed.append(programCounter)
         programCounter += 1
 
 
@@ -289,6 +306,7 @@ class Instruction:
         self.resetFlags()
 
         global programCounter
+        memoryAccessed.append(programCounter)
         programCounter += 1
 
 
@@ -310,6 +328,7 @@ class Instruction:
         self.resetFlags()
 
         global programCounter
+        memoryAccessed.append(programCounter)
         programCounter += 1
 
     def andInstruction(self):
@@ -329,6 +348,7 @@ class Instruction:
         self.resetFlags()
 
         global programCounter
+        memoryAccessed.append(programCounter)
         programCounter += 1
 
     def notInstruction(self):
@@ -350,6 +370,7 @@ class Instruction:
         self.resetFlags()
 
         global programCounter
+        memoryAccessed.append(programCounter)
         programCounter += 1
     
     def cmp(self):
@@ -369,6 +390,7 @@ class Instruction:
             registers["111"] = 1
 
         global programCounter
+        memoryAccessed.append(programCounter)
         programCounter += 1
 
     
@@ -377,6 +399,7 @@ class Instruction:
         self.resetFlags()
 
         global programCounter
+        memoryAccessed.append(programCounter)
         programCounter = memAddress
 
   
@@ -385,6 +408,7 @@ class Instruction:
     def jlt(self):
         memAddress = binaryToDecimal(int(self.instruction[8:]))
         global programCounter
+        memoryAccessed.append(programCounter)
         if (flags['l'] == 1):
             programCounter = memAddress
         else: 
@@ -395,6 +419,7 @@ class Instruction:
     def jgt(self):
         memAddress = binaryToDecimal(int(self.instruction[8:]))
         global programCounter
+        memoryAccessed.append(programCounter)
         if (flags['g'] == 1):
             programCounter = memAddress
         else:
@@ -405,6 +430,7 @@ class Instruction:
     def je(self):
         memAddress = binaryToDecimal(int(self.instruction[8:]))
         global programCounter
+        memoryAccessed.append(programCounter)
         if (flags['e'] == 1):
             programCounter = memAddress
         else:
@@ -415,6 +441,9 @@ class Instruction:
         global halted
         halted = 1
         self.resetFlags()
+        global programCounter
+        memoryAccessed.append(programCounter)
+
 
 
 
@@ -464,19 +493,30 @@ def memoryDump():
     for i in range(0,256):
         print(memory[i])
 
+cycle = 1
+cycleNumber = []
+memoryAccessed = []
 def simExecution():
     global halted
     while(not halted):
+        global cycle
+        cycleNumber.append(cycle)
         global programCounter
         pc = decimalToBinary8bit(programCounter)
         instruction = instructionsList[programCounter]
         instruction.executeInstruction()
         print(pc, end = " ")
         registerDump()
+        cycle+=1
     
     memoryDump()
 
 main()
 simExecution()
 
+
+plt.scatter(cycleNumber, memoryAccessed)
+plt.xlabel('Cycle Number')
+plt.ylabel('Memory Address Accessed')
+plt.show()
         
