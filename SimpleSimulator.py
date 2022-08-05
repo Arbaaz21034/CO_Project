@@ -125,7 +125,6 @@ class Instruction:
         if (registers[reg3] > 255): # Case of overflow
             debug("Encountered overflow in add");
             self.resetFlags()
-            flags['v'] = 1
             setFlag('v');
             registers[reg3] = registers[reg3] % (2**16)
 
@@ -148,7 +147,6 @@ class Instruction:
             debug("Encountered underflow in sub");
             registers[reg3] = 0
             self.resetFlags()
-            flags['v'] = 1
             setFlag('v');
         else:
             registers[reg3] = registers[reg1] - registers[reg2] # Actually subtract the registers's values and dump in reg3's value
@@ -197,7 +195,6 @@ class Instruction:
         if (registers[reg3] > 255):
             debug("Encountered overflow in mul");
             self.resetFlags()
-            flags['v'] = 1
             setFlag('v');
             registers[reg3] = registers[reg3] % (2**16)
 
@@ -379,15 +376,13 @@ class Instruction:
         reg2 = self.instruction[13:16]
 
         self.resetFlags()
+
         if (registers[reg1] == registers[reg2]):
-            flags['e'] = 1
-            registers["111"] = 1
+            setFlag('e');
         elif (registers[reg1] > registers[reg2]):
-            flags['g'] = 1
-            registers["111"] = 1
+            setFlag('g');
         elif (registers[reg1] < registers[reg2]):
-            flags['l'] = 1
-            registers["111"] = 1
+            setFlag('l');
 
         global programCounter
         memoryAccessed.append(programCounter)
@@ -444,18 +439,19 @@ class Instruction:
         global programCounter
         memoryAccessed.append(programCounter)
 
-
-
-
 def setFlag(flagType):
     if (flagType.lower() == "e"):
         registers['111'] = 1;
+        flags['e'] = 1;
     elif (flagType.lower() == "g"):
         registers["111"] = 2;
+        flags['g'] = 1;
     elif (flagType.lower() == "l"):
         registers["111"] = 4;
+        flags['l'] = 1;
     elif (flagType.lower() == "v"):
         registers["111"] = 8;
+        flags['v'] = 1;
     else:
         debug("Weird behavior in setFlag()");
 
