@@ -13,11 +13,16 @@ opcodes = {
     'add' : '10000', 'sub' : '10001', 'mov' : '10011', 'movimm' : '10010','ld'  : '10100',
     'st'  : '10101', 'mul' : '10110', 'div' : '10111', 'rs'  : '11000', 'ls'  : '11001',
     'xor' : '11010', 'or'  : '11011', 'and' : '11100', 'not' : '11101', 'cmp' : '11110', 'jmp' : '11111', 
-    'jlt' : '01100', 'jgt' : '01101', 'je'  : '01111', 'hlt' : '01010'
+    'jlt' : '01100', 'jgt' : '01101', 'je'  : '01111', 'hlt' : '01010',
+    # Special instructions for Q3
+    'addf': '00000', 'subf': '00001', 'movf': '00010'
 }
+
+
 registers = { # In the values of the keys, value[0] stands for the binary name (str) of the register and value[1] stands for its actual dynamic value (int) in the program
-    'r0' : ['000',0], 'r1' : ['001',0], 'r2' : ['010',0], 'r3' : ['011',0], 'r4' : ['100',0], 'r5' : ['101',0], 'r6' : ['110',0],
+    'r0' : ['000', 'w', 0], 'r1' : ['001', 'w', 0], 'r2' : ['010', 'w', 0], 'r3' : ['011', 'w', 0], 'r4' : ['100', 'w', 0], 'r5' : ['101', 'w', 0], 'r6' : ['110', 'w', 0],
 }
+
 # Flags Convention: v -> overflow flag, l -> lesser than flag, g -> greater than flag, e -> equal flag
 flags = { 'v':0, 'l':0, 'g':0, 'e':0 }
 # For handling Special Case of C type instruction
@@ -59,7 +64,7 @@ class Instruction:
     def checkInstructionName(self):
         instructionName = self.instruction[0]
         validInstructionNames = ['var','add','sub','mov','ld','st','mul','div','rs','ls','xor','or',
-        'and','not','cmp','jmp','jlt','jgt','je','hlt']
+        'and','not','cmp','jmp','jlt','jgt','je','hlt','movf','addf','subf']
 
         # Seeking errors
         if (instructionName not in validInstructionNames):
@@ -71,7 +76,7 @@ class Instruction:
     def executeInstruction(self):
         instructionName = self.instruction[0]
         commonInstructions = ['var','add','sub','mov','ld','st','mul','div','rs','ls','xor','or',
-        'and','not','cmp','jmp','jlt','jgt','je','hlt'] # list does not include labels as labels have custom names
+        'and','not','cmp','jmp','jlt','jgt','je','hlt','movf','addf','subf'] # list does not include labels as labels have custom names
         toLowerCase = lambda x : x.lower()
 
 
@@ -520,6 +525,41 @@ class Instruction:
         self.validInstruction = True
         self.instructionType = 'F'
 
+    #New Instructions for Q4
+
+    def movf(self):
+        if (self.instructionLength != 3):
+            self.syntaxError()
+        try:
+            reg1 = registers[self.instruction[1].lower()]
+            # insert code here
+
+        except KeyError:
+            if (self.instruction[1].lower() == "flags"):
+                if (self.instruction[2].lower() in registers):
+                    reg2 = registers[self.instruction[2].lower()]
+                    reg2[1] = (2**0)*flags['e']+(2**1)*flags['g']+(2**2)*flags['l']+(2**3)*flags['v']
+                    self.resetFlags()
+                    self.validInstruction = True
+                    self.instructionType = 'Special case of C'
+                else:    
+                    self.typoError()
+            else:
+                self.typoError()
+            
+
+    def addf(self):
+        pass
+
+
+    def subf(self):
+        pass
+
+
+
+
+
+
     # All Error Handling methods
 
     def syntaxError(self):
@@ -640,6 +680,90 @@ def convertDecimalToBinary(decimal):
     eightBitBinary = "0"*(8-len(binary)) + binary 
 
     return eightBitBinary
+
+
+
+
+
+#####################################################################
+##### Special Functions for handling Q4
+#####################################################################
+
+
+def floatToBinary(number):
+    numberString = str(number)
+    if '.' in numberString:
+        wholeString, decimalString = numberString.split('.')
+        whole = int(wholeString)
+        wholeBinary = bin(whole).replace('0b','')
+
+        decimal = int(decimalString)
+        decimalBinary = ""
+        counter = 0
+        while(decimal):
+            d = '0'+'.'+str(decimal)
+            d = float(d)
+            m = d*2
+
+            mstring = str(m)
+            decimalBinary += mstring[0]
+            decimal = int(mstring[2:])
+            counter += 1
+
+            if (counter == 5):
+                break
+    
+    return wholeBinary+'.'+ decimalBinary
+
+
+def binaryToIEEE(binary):
+    wholeBinary,decimalBinary = binary.split('.')
+    l = len(wholeBinary)
+
+    exponent = l-1
+    mantissa = wholeBinary[1:]
+    
+    i = 0
+    while(len(mantissa) != 5):
+        if (i < len(decimalBinary)):
+            mantissa += decimalBinary[i]
+            i+=1
+        else:
+            mantissa += '0'
+            i+=1
+    
+    expIEEE = bin(exponent).replace('0b','')
+    expIEEE = '0'*(3-len(expIEEE)) + expIEEE
+
+    IEEE = expIEEE + mantissa
+    return IEEE
+
+
+def binaryToDecimal(binary):
+    decimal, i = 0, 0
+    while(binary != 0):
+        dec = binary % 10
+        decimal = decimal + dec * (2**i)
+        binary = binary//10
+        i += 1
+    return decimal
+
+def IEEEToFloat(IEEE):
+    exponent = binaryToDecimal(int(IEEE[0:3]))
+    wholeBinary = '1'+IEEE[3:3+exponent]
+    floating = binaryToDecimal(int(wholeBinary))
+    for i in range(exponent,5):
+        floating += int(IEEE[i+3])*(2**(-i-1+exponent))
+    return floating
+
+
+
+
+
+
+
+
+
 
 
 # Main program loop which is responsible for handling the input

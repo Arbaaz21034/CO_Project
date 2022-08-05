@@ -1,21 +1,21 @@
-mov r1 $6
-mov r2 $0
-mov r3 $1
-mov r4 $0
-dog: add r4 r4 r6
-ayyyy: mov r6 $255
-label: add r2 r3 r2
-add r4 r3 r4
-cmp r2 r1
+mov R1 $6
+mov R2 $0
+mov R3 $1
+mov R4 $0
+dog: add R4 R4 R6
+ayyyy: mov R6 $255
+label: add R2 R3 R2
+add R4 R3 R4
+cmp R2 R1
 jlt label
-cmp r2 r1
+cmp R2 R1
 je ayyyy
-mov r1 $5
-mov r2 $6
-cmp r1 r2
+mov R1 $5
+mov R2 $6
+cmp R1 R2
 jgt dog
-add r1 r2 r3
-ls r1 $3
+add R1 R2 R3
+ls R1 $3
 hlt
 
 1001000100000110
