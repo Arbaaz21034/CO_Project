@@ -390,6 +390,7 @@ class Instruction:
 
     
     def jmp(self):
+        debug("JMP'd to an instruction.")
         memAddress = binaryToDecimal(int(self.instruction[8:]))
         self.resetFlags()
 
@@ -405,6 +406,7 @@ class Instruction:
         global programCounter
         memoryAccessed.append(programCounter)
         if (flags['l'] == 1):
+            debug("JLT'd to an instruction.")
             programCounter = memAddress
         else: 
             programCounter+=1
@@ -416,6 +418,7 @@ class Instruction:
         global programCounter
         memoryAccessed.append(programCounter)
         if (flags['g'] == 1):
+            debug("JGT'd to an instruction.")
             programCounter = memAddress
         else:
             programCounter+=1
@@ -427,6 +430,7 @@ class Instruction:
         global programCounter
         memoryAccessed.append(programCounter)
         if (flags['e'] == 1):
+            debug("JE'd to an instruction.")
             programCounter = memAddress
         else:
             programCounter+=1   
