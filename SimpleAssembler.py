@@ -812,14 +812,15 @@ def customFormatToFloat(format):
 
 
 
-
 def FLOAT_TO_CUSTOM_FORMAT(float):
-    if (float > 1000):
-        pass
+    if (float >= 252.0):
+        print("This number cannot be represented in the given 8-bit system.");
+        exit()
     binary = floatToBinary(float);
     customFormat = binaryToCustomFormat(binary);
     return customFormat;
 
+    
 def CUSTOM_FORMAT_TO_FLOAT(format):
     if (len(format) != 8):
         print("The Float format must be 8 bits.");
