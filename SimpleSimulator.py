@@ -35,11 +35,16 @@ opcodes = {
     '10000' : 'add', '10001' : 'sub', '10011' : 'mov', '10010' : 'movimm','10100'  : 'ld',
     '10101'  : 'st', '10110' : 'mul', '10111' : 'div', '11000'  : 'rs', '11001'  : 'ls',
     '11010' : 'xor', '11011'  : 'or', '11100' : 'and', '11101' : 'not', '11110' : 'cmp', '11111' : 'jmp', 
-    '01100' : 'jlt', '01101' : 'jgt', '01111'  : 'je', '01010' : 'hlt'
+    '01100' : 'jlt', '01101' : 'jgt', '01111'  : 'je', '01010' : 'hlt',
+    # Special instructions for Q3
+    '00000': 'addf', '00001': 'subf', '00010': 'movf'
 }
 registers = { 
     '000' : 0, '001' : 0, '010' : 0, '011' : 0, '100' : 0, '101' : 0, '110' : 0, '111' : 0
 }
+
+
+
 
 # Flags Convention: v -> overflow flag, l -> lesser than flag, g -> greater than flag, e -> equal flag
 flags = { 'v':0, 'l':0, 'g':0, 'e':0 }
@@ -102,7 +107,7 @@ class Instruction:
         instructionName = opcodes[self.instruction[0:5]]
         
         allInstructions = ['var','add','sub','mov','movimm','ld','st','mul','div','rs','ls','xor','or',
-        'and','not','cmp','jmp','jlt','jgt','je','hlt'] # list does not include labels as labels have custom names
+        'and','not','cmp','jmp','jlt','jgt','je','hlt','movf','addf','subf'] # list does not include labels as labels have custom names
 
 
         if (instructionName in allInstructions):
@@ -448,6 +453,57 @@ class Instruction:
         global programCounter
         memoryAccessed.append(programCounter)
 
+
+
+    #New Instructions for Q4
+
+    def movf(self):
+
+        reg1 = self.instruction[5:8]
+        immValueFloat = CUSTOM_FORMAT_TO_FLOAT(self.instruction[8:]);
+        registers[reg1] = immValueFloat
+        self.resetFlags()
+
+        global programCounter
+        memoryAccessed.append(programCounter)
+        programCounter+=1
+        
+
+    def addf(self):
+        reg1 = self.instruction[7:10]
+        reg2 = self.instruction[10:13]
+        reg3 = self.instruction[13:16]
+
+        if (type(registers[reg1]) == int):
+            binaryReg1 = decimalToBinary8bit(registers[reg1]);
+            floatReg1 = CUSTOM_FORMAT_TO_FLOAT(binaryReg1);
+        elif (type(registers[reg1]) == float):
+            floatReg1 = registers[reg1];
+        if (type(registers[reg2]) == int):
+            binaryReg2 = decimalToBinary8bit(registers[reg2]);
+            floatReg2 = CUSTOM_FORMAT_TO_FLOAT(binaryReg2);
+        elif (type(registers[reg2]) == float):
+            floatReg2 = registers[reg2];
+
+        registers[reg3] = floatReg1 + floatReg2; 
+        
+        if (registers[reg3] > 252): # Case of overflow
+            debug("Encountered overflow in addf");
+            self.resetFlags()
+            setFlag('v');
+            registers[reg3] = registers[reg3] % (2**16)
+
+        else:
+            self.resetFlags()
+
+        global programCounter
+        memoryAccessed.append(programCounter)
+        programCounter+=1
+
+
+
+
+
 def setFlag(flagType):
     if (flagType.lower() == "e"):
         registers['111'] = 1;
@@ -595,7 +651,7 @@ def FLOAT_TO_CUSTOM_FORMAT(float):
     binary = floatToBinary(float);
     customFormat = binaryToCustomFormat(binary);
     return customFormat;
-    
+
 
 def CUSTOM_FORMAT_TO_FLOAT(format):
     if (len(format) != 8):
@@ -636,7 +692,10 @@ def main():
 
 def registerDump():
     for r in registers:
-        reg = decimalToBinary16bit(registers[r])
+        if (type(registers[r]) == int):
+            reg = decimalToBinary16bit(registers[r])
+        else:
+            reg = "00000000"+FLOAT_TO_CUSTOM_FORMAT(registers[r]);
         print(reg, end = " ")
     print()
 
@@ -666,7 +725,7 @@ main()
 simExecution()
 
 
-plt.scatter(cycleNumber, memoryAccessed)
+plt.scatter(cycleNumber, memoryAccessed,marker="o")
 plt.xlabel('Cycle Number')
 plt.ylabel('Memory Address Accessed')
 plt.show()
