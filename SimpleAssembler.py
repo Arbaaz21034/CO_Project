@@ -20,7 +20,7 @@ opcodes = {
 
 
 registers = { # In the values of the keys, value[0] stands for the binary name (str) of the register and value[1] stands for its actual dynamic value (int) in the program
-    'r0' : ['000', 'w', 0], 'r1' : ['001', 'w', 0], 'r2' : ['010', 'w', 0], 'r3' : ['011', 'w', 0], 'r4' : ['100', 'w', 0], 'r5' : ['101', 'w', 0], 'r6' : ['110', 'w', 0],
+    'r0' : ['000',0], 'r1' : ['001',0], 'r2' : ['010',0], 'r3' : ['011',0], 'r4' : ['100',0], 'r5' : ['101',0], 'r6' : ['110',0],
 }
 
 # Flags Convention: v -> overflow flag, l -> lesser than flag, g -> greater than flag, e -> equal flag
@@ -682,6 +682,11 @@ def convertDecimalToBinary(decimal):
     return eightBitBinary
 
 
+def decimalToBinary(decimal, bits):
+    binary = bin(decimal).replace('0b','');
+    binary = "0"*(bits - len(binary)) + binary;
+    return binary;
+
 
 
 
@@ -689,9 +694,12 @@ def convertDecimalToBinary(decimal):
 ##### Special Functions for handling Q4
 #####################################################################
 
-
 def floatToBinary(number):
-    numberString = str(number)
+
+    numberString = str(number);
+    if '.' not in numberString:
+        numberString += ".0";
+
     if '.' in numberString:
         wholeString, decimalString = numberString.split('.')
         whole = int(wholeString)
@@ -716,53 +724,113 @@ def floatToBinary(number):
     return wholeBinary+'.'+ decimalBinary
 
 
-def binaryToIEEE(binary):
-    wholeBinary,decimalBinary = binary.split('.')
-    l = len(wholeBinary)
 
-    exponent = l-1
-    mantissa = wholeBinary[1:]
+
+def decimalToBinary(decimal, bits):
+    binary = bin(decimal).replace('0b','');
+    binary = "0"*(bits - len(binary)) + binary;
+    return binary;
+
+
+def binaryToDecimalAlt(binary):
+    dec = 0;
+    c = 0;
+    for bit in binary[::-1]:
+        a = int(bit) * (2**c);
+        dec += a;
+        c += 1;
+    return dec;
+
+
+def floatBinaryToDecimal(floatBinary):
+    integerPart = 0;
+    decimalPart = 0;
+
+    decimalIndex = floatBinary.index('.');
+    a = 0;
+    for x in reversed(floatBinary[0:decimalIndex]):
+        integerPart += int(x) * (2**a);
+        a += 1;
+
+    b = -1;
+    for x in floatBinary[decimalIndex+1::]:
+        decimalPart += int(x) * (2**b);
+        b -= 1;
+
+    decimal = integerPart + decimalPart;
+    return decimal;
+
+
+def binaryToCustomFormat(binary):
+    binary = list(binary);
+    exponent = 0;
+    while (binary[1] != '.'):
+        exponent += 1;
+        decimalIndex = binary.index(".");
+        tmp = str(binary[decimalIndex-1]);
+        binary[decimalIndex-1] = '.';
+        binary[decimalIndex] = tmp;
+        
+    mantissa = binary[2::];
+    exponent = list(decimalToBinary(exponent,3));
+    while (len(mantissa) < 5):
+        mantissa.append('0');
+
+    format = exponent + mantissa[0:5];
+    return "".join(format);
+
+
+
+def customFormatToFloat(format):
+    exponentInBinary = format[0:3];
+    mantissaInBinary = format[3::];
+
+    exponent = binaryToDecimalAlt(exponentInBinary);
+    fullMantissa = "1."+mantissaInBinary;
+    fullMantissa = list(fullMantissa)
     
-    i = 0
-    while(len(mantissa) != 5):
-        if (i < len(decimalBinary)):
-            mantissa += decimalBinary[i]
-            i+=1
-        else:
-            mantissa += '0'
-            i+=1
-    
-    expIEEE = bin(exponent).replace('0b','')
-    expIEEE = '0'*(3-len(expIEEE)) + expIEEE
+    c = 0;
+    for x in range(exponent):        
+        decimalIndex = fullMantissa.index(".");
+        if (decimalIndex == len(fullMantissa) - 1):
+            fullMantissa.append("0");
+        if (c >= exponent):
+            break;
+        tmp = fullMantissa[decimalIndex+1];
+        fullMantissa[decimalIndex+1] = '.';
+        fullMantissa[decimalIndex] = tmp;
+        c = c+1;
 
-    IEEE = expIEEE + mantissa
-    return IEEE
+    if (fullMantissa[-1] == "."):
+        fullMantissa.append("0");
+    fullMantissa = "".join(fullMantissa);
+    floatNumber = floatBinaryToDecimal(fullMantissa);
 
 
-def binaryToDecimal(binary):
-    decimal, i = 0, 0
-    while(binary != 0):
-        dec = binary % 10
-        decimal = decimal + dec * (2**i)
-        binary = binary//10
-        i += 1
-    return decimal
-
-def IEEEToFloat(IEEE):
-    exponent = binaryToDecimal(int(IEEE[0:3]))
-    wholeBinary = '1'+IEEE[3:3+exponent]
-    floating = binaryToDecimal(int(wholeBinary))
-    for i in range(exponent,5):
-        floating += int(IEEE[i+3])*(2**(-i-1+exponent))
-    return floating
+    return floatNumber;
 
 
 
 
 
+def FLOAT_TO_CUSTOM_FORMAT(float):
+    if (float > 1000):
+        pass
+    binary = floatToBinary(float);
+    customFormat = binaryToCustomFormat(binary);
+    return customFormat;
+
+def CUSTOM_FORMAT_TO_FLOAT(format):
+    if (len(format) != 8):
+        print("The Float format must be 8 bits.");
+        exit();
+    float = customFormatToFloat(format);
+    return float;
 
 
-
+###########################################################
+###########################################################
+###########################################################
 
 
 

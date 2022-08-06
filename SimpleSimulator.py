@@ -69,6 +69,11 @@ def decimalToSmallestBinary(decimal):
     return binary
 
 
+def decimalToBinary(decimal, bits):
+    binary = bin(decimal).replace('0b','');
+    binary = "0"*(bits - len(binary)) + binary;
+    return binary;
+
 
 # This function converts binary numbers to decimal equivalent.
 
@@ -458,6 +463,152 @@ def setFlag(flagType):
         flags['v'] = 1;
     else:
         debug("Weird behavior in setFlag()");
+
+
+
+
+#####################################################################
+##### Special Functions for handling Q4
+#####################################################################
+
+def floatToBinary(number):
+
+    numberString = str(number);
+    if '.' not in numberString:
+        numberString += ".0";
+
+    if '.' in numberString:
+        wholeString, decimalString = numberString.split('.')
+        whole = int(wholeString)
+        wholeBinary = bin(whole).replace('0b','')
+
+        decimal = int(decimalString)
+        decimalBinary = ""
+        counter = 0
+        while(decimal):
+            d = '0'+'.'+str(decimal)
+            d = float(d)
+            m = d*2
+
+            mstring = str(m)
+            decimalBinary += mstring[0]
+            decimal = int(mstring[2:])
+            counter += 1
+
+            if (counter == 5):
+                break
+    
+    return wholeBinary+'.'+ decimalBinary
+
+
+
+
+def decimalToBinary(decimal, bits):
+    binary = bin(decimal).replace('0b','');
+    binary = "0"*(bits - len(binary)) + binary;
+    return binary;
+
+
+def binaryToDecimalAlt(binary):
+    dec = 0;
+    c = 0;
+    for bit in binary[::-1]:
+        a = int(bit) * (2**c);
+        dec += a;
+        c += 1;
+    return dec;
+
+
+def floatBinaryToDecimal(floatBinary):
+    integerPart = 0;
+    decimalPart = 0;
+
+    decimalIndex = floatBinary.index('.');
+    a = 0;
+    for x in reversed(floatBinary[0:decimalIndex]):
+        integerPart += int(x) * (2**a);
+        a += 1;
+
+    b = -1;
+    for x in floatBinary[decimalIndex+1::]:
+        decimalPart += int(x) * (2**b);
+        b -= 1;
+
+    decimal = integerPart + decimalPart;
+    return decimal;
+
+
+def binaryToCustomFormat(binary):
+    binary = list(binary);
+    exponent = 0;
+    while (binary[1] != '.'):
+        exponent += 1;
+        decimalIndex = binary.index(".");
+        tmp = str(binary[decimalIndex-1]);
+        binary[decimalIndex-1] = '.';
+        binary[decimalIndex] = tmp;
+        
+    mantissa = binary[2::];
+    exponent = list(decimalToBinary(exponent,3));
+    while (len(mantissa) < 5):
+        mantissa.append('0');
+
+    format = exponent + mantissa[0:5];
+    return "".join(format);
+
+
+
+def customFormatToFloat(format):
+    exponentInBinary = format[0:3];
+    mantissaInBinary = format[3::];
+
+    exponent = binaryToDecimalAlt(exponentInBinary);
+    fullMantissa = "1."+mantissaInBinary;
+    fullMantissa = list(fullMantissa)
+    
+    c = 0;
+    for x in range(exponent):        
+        decimalIndex = fullMantissa.index(".");
+        if (decimalIndex == len(fullMantissa) - 1):
+            fullMantissa.append("0");
+        if (c >= exponent):
+            break;
+        tmp = fullMantissa[decimalIndex+1];
+        fullMantissa[decimalIndex+1] = '.';
+        fullMantissa[decimalIndex] = tmp;
+        c = c+1;
+
+    if (fullMantissa[-1] == "."):
+        fullMantissa.append("0");
+    fullMantissa = "".join(fullMantissa);
+    floatNumber = floatBinaryToDecimal(fullMantissa);
+
+
+    return floatNumber;
+
+
+
+
+
+def FLOAT_TO_CUSTOM_FORMAT(float):
+    if (float > 1000):
+        pass
+    binary = floatToBinary(float);
+    customFormat = binaryToCustomFormat(binary);
+    return customFormat;
+
+def CUSTOM_FORMAT_TO_FLOAT(format):
+    if (len(format) != 8):
+        print("The Float format must be 8 bits.");
+        exit();
+    float = customFormatToFloat(format);
+    return float;
+
+
+############################################################
+############################################################
+############################################################
+
 
 # Main program loop which is responsible for handling the input
 def main():
