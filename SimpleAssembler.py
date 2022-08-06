@@ -531,29 +531,76 @@ class Instruction:
         if (self.instructionLength != 3):
             self.syntaxError()
         try:
-            reg1 = registers[self.instruction[1].lower()]
+            reg1 = registers[self.instruction[1].lower()];
+            if (self.instruction[2].startswith('$')):
+                immValue = float(self.instruction[2].replace('$',''));
+                if (immValue > 252.0 or immValue < 1.0):
+                    self.immError();
+                
+                reg1[1] = immValue
+                self.resetFlags()
+                self.instruction[0] = "movf"
+                self.validInstruction = True
+                self.instructionType = 'B'
+            
+            else:
+                self.syntaxError();
             # insert code here
 
         except KeyError:
-            if (self.instruction[1].lower() == "flags"):
-                if (self.instruction[2].lower() in registers):
-                    reg2 = registers[self.instruction[2].lower()]
-                    reg2[1] = (2**0)*flags['e']+(2**1)*flags['g']+(2**2)*flags['l']+(2**3)*flags['v']
-                    self.resetFlags()
-                    self.validInstruction = True
-                    self.instructionType = 'Special case of C'
-                else:    
-                    self.typoError()
-            else:
-                self.typoError()
+            self.typoError()
             
 
     def addf(self):
-        pass
+        if (self.instructionLength != 4):
+            self.syntaxError()
+
+        try:
+            reg1 = registers[self.instruction[1].lower()]
+            reg2 = registers[self.instruction[2].lower()]
+            reg3 = registers[self.instruction[3].lower()]
+            reg3[1] = reg1[1] + reg2[1] # Actually add the registers's values and dump in reg3's value
+            
+            if (reg3[1] > 252.0): # Case of overflow
+                self.resetFlags()
+                flags['v'] = 1
+                reg3[1] = reg3[1] % (2**16)
+
+            else:
+                self.resetFlags()
+
+            self.validInstruction = True
+            self.instructionType = 'A'
+
+        except KeyError: # This error is thrown when one of the register names is invalid
+            self.typoError()
+    
 
 
     def subf(self):
-        pass
+        if (self.instructionLength != 4):
+            self.syntaxError()
+
+        try:
+            reg1 = registers[self.instruction[1].lower()]
+            reg2 = registers[self.instruction[2].lower()]
+            reg3 = registers[self.instruction[3].lower()]
+
+            if (reg2[1] > reg1[1]):
+                reg3[1] = 0
+                self.resetFlags()
+                flags['v'] = 1
+            else:
+                reg3[1] = reg1[1] - reg2[1] # Actually subtract the registers's values and dump in reg3's value
+                self.resetFlags()
+
+            self.validInstruction = True
+            self.instructionType = 'A'
+
+        except KeyError: # This error is thrown when one of the register names is invalid
+            self.typoError()
+
+
 
 
 
@@ -628,10 +675,16 @@ def encode(instructionObject):
     elif (instructionType == 'B'): # Register and Immediate type
         opcode = opcodes[instructionObject.instruction[0]]
         reg1 = registers[instructionObject.instruction[1].lower()]
-        immValue = int(instructionObject.instruction[2].replace('$',''))
-        immValueInBinary = convertDecimalToBinary(immValue) # Strictly 8-bits
+        if (instructionObject.instruction[0] == "movf"):
+            immValue = float(instructionObject.instruction[2].replace('$',''));
+            immValueInCustomFormat = FLOAT_TO_CUSTOM_FORMAT(immValue);
+            binaryOutput = f"{opcode}{reg1[0]}{immValueInCustomFormat}";
+    
+        else:
+            immValue = int(instructionObject.instruction[2].replace('$',''))
+            immValueInBinary = convertDecimalToBinary(immValue) # Strictly 8-bits
 
-        binaryOutput = f"{opcode}{reg1[0]}{immValueInBinary}"
+            binaryOutput = f"{opcode}{reg1[0]}{immValueInBinary}"
 
     elif (instructionType == 'C'): # 2 Registers type
         opcode = opcodes[instructionObject.instruction[0]]
@@ -813,14 +866,14 @@ def customFormatToFloat(format):
 
 
 def FLOAT_TO_CUSTOM_FORMAT(float):
-    if (float >= 252.0):
+    if (float >= 252.0 or float < 1.0):
         print("This number cannot be represented in the given 8-bit system.");
         exit()
     binary = floatToBinary(float);
     customFormat = binaryToCustomFormat(binary);
     return customFormat;
 
-    
+
 def CUSTOM_FORMAT_TO_FLOAT(format):
     if (len(format) != 8):
         print("The Float format must be 8 bits.");
