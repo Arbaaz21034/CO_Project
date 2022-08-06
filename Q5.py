@@ -1,6 +1,6 @@
 import math
 cpuSize = 0
-memorySpace = input("Enter the space in Memory:\n")
+memorySpace = input("Enter the space in Memory: ")
 print()
 print("MENU -> Memory Addressing Types")
 print("1. Bit Addressable Memory")

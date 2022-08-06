@@ -567,7 +567,7 @@ class Instruction:
             if (reg3[1] > 252.0): # Case of overflow
                 self.resetFlags()
                 flags['v'] = 1
-                reg3[1] = reg3[1] % (2**16)
+                reg3[1] = 252.0
 
             else:
                 self.resetFlags()
@@ -589,8 +589,8 @@ class Instruction:
             reg2 = registers[self.instruction[2].lower()]
             reg3 = registers[self.instruction[3].lower()]
 
-            if (reg2[1] > reg1[1]):
-                reg3[1] = 0
+            if (reg2[1] > reg1[1] or ((reg1[1]-reg2[1]) < 1.0)):
+                reg3[1] = 1.0
                 self.resetFlags()
                 flags['v'] = 1
             else:

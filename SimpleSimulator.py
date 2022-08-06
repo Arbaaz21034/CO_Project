@@ -516,7 +516,7 @@ class Instruction:
             debug("Encountered overflow in addf");
             self.resetFlags()
             setFlag('v');
-            registers[reg3] = registers[reg3] % (2**16)
+            registers[reg3] = 252.0
 
         else:
             self.resetFlags()
@@ -542,9 +542,9 @@ class Instruction:
         elif (type(registers[reg2]) == float):
             floatReg2 = registers[reg2];
 
-        if (floatReg2 > floatReg1):
+        if (floatReg2 > floatReg1 or ((floatReg1 - floatReg2) < 1.0)):
             debug("Encountered underflow in sub")
-            registers[reg3] = 0;
+            registers[reg3] = 1.0;
             self.resetFlags()
             setFlag('v');
         else:
