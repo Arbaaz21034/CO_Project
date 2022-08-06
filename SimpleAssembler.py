@@ -182,7 +182,10 @@ class Instruction:
             reg1 = registers[self.instruction[1].lower()]
 
             if (self.instruction[2].startswith('$')): # HANDLES MOV IMMEDIATE
-                immValue = int(self.instruction[2].replace('$',''))
+                if "." in self.instruction[2]:
+                    self.immError();
+                else:
+                    immValue = int(self.instruction[2].replace('$',''))
                 if (immValue > 255):
                     self.immError()
             

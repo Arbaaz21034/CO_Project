@@ -130,8 +130,20 @@ class Instruction:
         reg1 = self.instruction[7:10]
         reg2 = self.instruction[10:13]
         reg3 = self.instruction[13:16]
-        registers[reg3] = registers[reg1] + registers[reg2] 
-        
+
+        if (type(registers[reg1]) == float):
+            customFormatReg1 = FLOAT_TO_CUSTOM_FORMAT(registers[reg1]);
+            intReg1 = binaryToDecimal(int(customFormatReg1));
+        elif (type(registers[reg1]) == int):
+            intReg1 = registers[reg1];
+        if (type(registers[reg2]) == float):
+            customFormatReg2 = FLOAT_TO_CUSTOM_FORMAT(registers[reg2]);
+            intReg2 = binaryToDecimal(int(customFormatReg2));
+        elif (type(registers[reg2]) == int):
+            intReg2 = registers[reg2];
+
+        registers[reg3] = intReg1 + intReg2; 
+
         if (registers[reg3] > 255): # Case of overflow
             debug("Encountered overflow in add");
             self.resetFlags()
@@ -153,13 +165,26 @@ class Instruction:
         reg2 = self.instruction[10:13]
         reg3 = self.instruction[13:16]
 
-        if (registers[reg2] > registers[reg1]):
+
+        if (type(registers[reg1]) == float):
+            customFormatReg1 = FLOAT_TO_CUSTOM_FORMAT(registers[reg1]);
+            intReg1 = binaryToDecimal(int(customFormatReg1));
+        elif (type(registers[reg1]) == int):
+            intReg1 = registers[reg1];
+        if (type(registers[reg2]) == float):
+            customFormatReg2 = FLOAT_TO_CUSTOM_FORMAT(registers[reg2]);
+            intReg2 = binaryToDecimal(int(customFormatReg2));
+        elif (type(registers[reg2]) == int):
+            intReg2 = registers[reg2];
+
+
+        if (intReg2 > intReg1):
             debug("Encountered underflow in sub");
             registers[reg3] = 0
             self.resetFlags()
             setFlag('v');
         else:
-            registers[reg3] = registers[reg1] - registers[reg2] # Actually subtract the registers's values and dump in reg3's value
+            registers[reg3] = intReg1 - intReg2 # Actually subtract the registers's values and dump in reg3's value
             self.resetFlags()
 
         global programCounter
@@ -494,6 +519,36 @@ class Instruction:
             registers[reg3] = registers[reg3] % (2**16)
 
         else:
+            self.resetFlags()
+
+        global programCounter
+        memoryAccessed.append(programCounter)
+        programCounter+=1
+
+    def subf(self):
+
+        reg1 = self.instruction[7:10]
+        reg2 = self.instruction[10:13]
+        reg3 = self.instruction[13:16]
+
+        if (type(registers[reg1]) == int):
+            binaryReg1 = decimalToBinary8bit(registers[reg1]);
+            floatReg1 = CUSTOM_FORMAT_TO_FLOAT(binaryReg1);
+        elif (type(registers[reg1]) == float):
+            floatReg1 = registers[reg1];
+        if (type(registers[reg2]) == int):
+            binaryReg2 = decimalToBinary8bit(registers[reg2]);
+            floatReg2 = CUSTOM_FORMAT_TO_FLOAT(binaryReg2);
+        elif (type(registers[reg2]) == float):
+            floatReg2 = registers[reg2];
+
+        if (floatReg2 > floatReg1):
+            debug("Encountered underflow in sub")
+            registers[reg3] = 0;
+            self.resetFlags()
+            setFlag('v');
+        else:
+            registers[reg3] = floatReg1 - floatReg2 # Actually subtract the registers's values and dump in reg3's value
             self.resetFlags()
 
         global programCounter
